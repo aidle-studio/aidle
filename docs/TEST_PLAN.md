@@ -23,6 +23,8 @@
 - `AC-012` -> `TC-023`
 - `AC-013` -> `TC-024`
 - `AC-014` -> `TC-025`
+- `AC-015` -> `TC-028`
+- `AC-016` -> `TC-029`
 
 ## 3. テストケース一覧（初版 / Red）
 
@@ -55,6 +57,8 @@
 | TC-025 | AC-014 | integration | 統計ログ未指定（既定）時は統計ファイルが生成されない | Green |
 | TC-026 | AC-008 | integration | TTY接続時かつ対話モード有効時にプロンプトが表示され入力値が反映される | Green |
 | TC-027 | AC-008 | integration | `execution.non_interactive=true` 設定時にプロンプトがスキップされる | Green |
+| TC-028 | AC-015 | integration | `--template rust-cli` および `template.name=rust-cli` で `rust-cli` テンプレートが生成される | Red |
+| TC-029 | AC-016 | integration | サポート対象外テンプレート名は終了コード2と原因/対処で失敗する | Red |
 
 ## 4. 実装順序（推奨）
 1. `TC-001`, `TC-002`（基本生成）
