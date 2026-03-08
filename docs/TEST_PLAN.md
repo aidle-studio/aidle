@@ -16,16 +16,16 @@
 | TC ID | 対応AC | レベル | 観点 | 初期状態 |
 |---|---|---|---|---|
 | TC-001 | AC-001 | integration | `aidle init` でカレント配下にGC-1必須ファイルが生成される | Green |
-| TC-002 | AC-001 | integration | `aidle init <dir>` で指定ディレクトリ配下にGC-1必須ファイルが生成される | Red |
-| TC-003 | AC-001 | integration | `--dry-run` 時にファイルは作成されず、作成予定のみ出力される | Red |
+| TC-002 | AC-001 | integration | `aidle init <dir>` で指定ディレクトリ配下にGC-1必須ファイルが生成される | Green |
+| TC-003 | AC-001 | integration | `--dry-run` 時にファイルは作成されず、作成予定のみ出力される | Green |
 | TC-004 | AC-002 | integration | 生成ドキュメントに開発手順・合意ゲートを示す必須見出しが含まれる | Red |
 | TC-005 | AC-003 | integration | TDDサイクルとDefinition of Doneが規約ファイルに存在する | Red |
-| TC-006 | AC-004 | integration | 引数エラー時に終了コード2と原因/対処メッセージが出力される | Red |
-| TC-007 | AC-004 | integration | I/Oエラー時に終了コード3と原因/対処メッセージが出力される | Red |
-| TC-008 | AC-005 | integration | 途中失敗時、新規作成ファイルがロールバックで削除される | Red |
-| TC-009 | AC-005 | integration | `--force` 上書き失敗時、既存ファイルが実行前状態へ復元される | Red |
-| TC-010 | AC-006 | integration | 既存ディレクトリ導入時、既存ファイルは上書きされず `skipped` になる | Red |
-| TC-011 | AC-006 | integration | 既存ディレクトリ導入時、`--force` で既存ファイルが上書きされる | Red |
+| TC-006 | AC-004 | integration | 引数エラー時に終了コード2と原因/対処メッセージが出力される | Green |
+| TC-007 | AC-004 | integration | I/Oエラー時に終了コード3と原因/対処メッセージが出力される | Green |
+| TC-008 | AC-005 | integration | 途中失敗時、新規作成ファイルがロールバックで削除される | Green |
+| TC-009 | AC-005 | integration | `--force` 上書き失敗時、既存ファイルが実行前状態へ復元される | Green |
+| TC-010 | AC-006 | integration | 既存ディレクトリ導入時、既存ファイルは上書きされず `skipped` になる | Green |
+| TC-011 | AC-006 | integration | 既存ディレクトリ導入時、`--force` で既存ファイルが上書きされる | Green |
 
 ## 4. 実装順序（推奨）
 1. `TC-001`, `TC-002`（基本生成）

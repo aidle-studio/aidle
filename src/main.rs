@@ -15,6 +15,14 @@ const REQUIRED_FILES: [(&str, &str); 8] = [
     ("docs/KNOWLEDGE.md", "# KNOWLEDGE.md\n"),
 ];
 
+#[derive(Default)]
+struct RunStats {
+    created: usize,
+    updated: usize,
+    skipped: usize,
+    errors: usize,
+}
+
 fn main() -> ExitCode {
     match run() {
         Ok(()) => ExitCode::SUCCESS,
@@ -43,65 +51,148 @@ fn run() -> Result<(), (u8, String)> {
         ));
     }
 
-    let root = match args.next() {
-        Some(dir) => PathBuf::from(dir),
-        None => env::current_dir()
-            .map_err(|e| (3, format!("I/Oエラー: カレントディレクトリ取得に失敗しました: {e}")))?,
-    };
+    let mut dry_run = false;
+    let mut force = false;
+    let mut dir: Option<PathBuf> = None;
 
-    if args.next().is_some() {
-        return Err((
-            2,
-            "引数エラー: `init` に指定できる引数は1つまでです。対処: `aidle init [dir]` で実行してください。"
-                .to_string(),
-        ));
+    for arg in args {
+        if arg == "--dry-run" {
+            dry_run = true;
+            continue;
+        }
+        if arg == "--force" {
+            force = true;
+            continue;
+        }
+
+        if arg.starts_with('-') {
+            return Err((
+                2,
+                format!(
+                    "引数エラー: 未対応オプション `{arg}` です。対処: `aidle init [dir] [--dry-run] [--force]` を使用してください。"
+                ),
+            ));
+        }
+
+        if dir.is_some() {
+            return Err((
+                2,
+                "引数エラー: `init` に指定できるディレクトリは1つまでです。対処: `aidle init [dir] [--dry-run] [--force]` で実行してください。"
+                    .to_string(),
+            ));
+        }
+
+        dir = Some(PathBuf::from(arg));
     }
 
-    create_required_files(&root)
+    let root = match dir {
+        Some(path) => path,
+        None => env::current_dir().map_err(|e| io_error("カレントディレクトリ取得", &e))?,
+    };
+
+    let stats = create_required_files(&root, dry_run, force)?;
+    print_summary(&stats);
+    Ok(())
 }
 
-fn create_required_files(root: &Path) -> Result<(), (u8, String)> {
-    fs::create_dir_all(root)
-        .map_err(|e| (3, format!("I/Oエラー: 出力ディレクトリを作成できませんでした: {e}")))?;
+fn io_error(context: &str, e: &std::io::Error) -> (u8, String) {
+    (
+        3,
+        format!(
+            "I/Oエラー: {context} に失敗しました: {e}\n対処: パスの妥当性とアクセス権限を確認してください。"
+        ),
+    )
+}
+
+fn rollback_state(created_files: &[PathBuf], overwritten_files: &[(PathBuf, Vec<u8>)]) {
+    for path in created_files.iter().rev() {
+        let _ = fs::remove_file(path);
+    }
+    for (path, original) in overwritten_files.iter().rev() {
+        let _ = fs::write(path, original);
+    }
+}
+
+fn print_summary(stats: &RunStats) {
+    println!(
+        "created={} updated={} skipped={} errors={}",
+        stats.created, stats.updated, stats.skipped, stats.errors
+    );
+}
+
+fn create_required_files(root: &Path, dry_run: bool, force: bool) -> Result<RunStats, (u8, String)> {
+    let mut stats = RunStats::default();
+
+    if dry_run {
+        return Ok(stats);
+    }
+
+    fs::create_dir_all(root).map_err(|e| io_error("出力ディレクトリ作成", &e))?;
+
+    let mut created_files: Vec<PathBuf> = Vec::new();
+    let mut overwritten_files: Vec<(PathBuf, Vec<u8>)> = Vec::new();
 
     for (rel, contents) in REQUIRED_FILES {
         let path = root.join(rel);
         if let Some(parent) = path.parent() {
-            fs::create_dir_all(parent).map_err(|e| {
-                (
-                    3,
-                    format!(
-                        "I/Oエラー: 親ディレクトリを作成できませんでした ({}): {e}",
-                        parent.display()
-                    ),
-                )
-            })?;
+            if let Err(e) = fs::create_dir_all(parent) {
+                let err = io_error(
+                    &format!("親ディレクトリ作成 ({})", parent.display()),
+                    &e,
+                );
+                rollback_state(&created_files, &overwritten_files);
+                return Err(err);
+            }
         }
 
-        let mut file = match OpenOptions::new().write(true).create_new(true).open(&path) {
-            Ok(f) => f,
-            Err(e) if e.kind() == std::io::ErrorKind::AlreadyExists => continue,
-            Err(e) => {
-                return Err((
-                    3,
-                    format!(
-                        "I/Oエラー: ファイル作成に失敗しました ({}): {e}",
-                        path.display()
-                    ),
-                ))
+        let mut file = if path.exists() {
+            if !force {
+                stats.skipped += 1;
+                continue;
+            }
+
+            let original = match fs::read(&path) {
+                Ok(bytes) => bytes,
+                Err(e) => {
+                    let err = io_error(&format!("既存ファイル読み込み ({})", path.display()), &e);
+                    rollback_state(&created_files, &overwritten_files);
+                    return Err(err);
+                }
+            };
+            overwritten_files.push((path.clone(), original));
+
+            match OpenOptions::new().write(true).truncate(true).open(&path) {
+                Ok(f) => {
+                    stats.updated += 1;
+                    f
+                }
+                Err(e) => {
+                    let err = io_error(&format!("ファイル上書き ({})", path.display()), &e);
+                    rollback_state(&created_files, &overwritten_files);
+                    return Err(err);
+                }
+            }
+        } else {
+            match OpenOptions::new().write(true).create_new(true).open(&path) {
+                Ok(f) => {
+                    created_files.push(path.clone());
+                    stats.created += 1;
+                    f
+                }
+                Err(e) => {
+                    let err = io_error(&format!("ファイル作成 ({})", path.display()), &e);
+                    rollback_state(&created_files, &overwritten_files);
+                    return Err(err);
+                }
             }
         };
 
-        file.write_all(contents.as_bytes()).map_err(|e| {
-            (
-                3,
-                format!(
-                    "I/Oエラー: ファイル書き込みに失敗しました ({}): {e}",
-                    path.display()
-                ),
-            )
-        })?;
+        if let Err(e) = file.write_all(contents.as_bytes()) {
+            let err = io_error(&format!("ファイル書き込み ({})", path.display()), &e);
+            rollback_state(&created_files, &overwritten_files);
+            return Err(err);
+        }
     }
 
-    Ok(())
+    Ok(stats)
 }
