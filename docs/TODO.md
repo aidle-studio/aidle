@@ -80,7 +80,7 @@
 - [x] GC-2拡張仕様（最小内容・生成スイッチ）とAC-011/AC-012を定義する
 - [x] `.github/copilot-instructions.md` と `.github/instructions/*.instructions.md` の生成テンプレートを追加する
 - [ ] `GEMINI.md` / `CLAUDE.md` の互換アダプタ生成を追加する
-- [ ] 生成ON/OFFのCLIオプションと設定キーを追加する
+- [x] 生成ON/OFFのCLIオプションと設定キーを追加する
 - [ ] 契約テストを追加してGreen化する
 - [ ] 通し検証（`cargo nextest run`）とドキュメント更新を完了する
 

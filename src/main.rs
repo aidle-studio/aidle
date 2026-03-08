@@ -17,6 +17,12 @@ const DEFAULT_TEMPLATE_FILES: [&str; 8] = [
     "docs/TEST_PLAN.md",
     "docs/KNOWLEDGE.md",
 ];
+const DEFAULT_ADAPTER_TEMPLATE_FILES: [&str; 4] = [
+    ".github/copilot-instructions.md",
+    ".github/instructions/general.instructions.md",
+    "GEMINI.md",
+    "CLAUDE.md",
+];
 
 #[derive(Default)]
 struct RunStats {
@@ -39,6 +45,7 @@ struct RunOptions {
     non_interactive: bool,
     verbose: bool,
     json: bool,
+    with_adapters: bool,
 }
 
 #[derive(Debug, Default)]
@@ -50,6 +57,7 @@ struct CliOptions {
     non_interactive: bool,
     verbose: bool,
     json: bool,
+    with_adapters: bool,
     template: Option<String>,
     agent_format: Option<String>,
 }
@@ -60,6 +68,7 @@ struct AidleConfig {
     template: Option<TemplateConfig>,
     agent: Option<AgentConfig>,
     execution: Option<ExecutionConfig>,
+    adapters: Option<AdaptersConfig>,
 }
 
 #[derive(Debug, Default, Deserialize)]
@@ -85,6 +94,11 @@ struct ExecutionConfig {
     non_interactive: Option<bool>,
     verbose: Option<bool>,
     json: Option<bool>,
+}
+
+#[derive(Debug, Default, Deserialize)]
+struct AdaptersConfig {
+    enabled: Option<bool>,
 }
 
 fn main() -> ExitCode {
@@ -142,6 +156,12 @@ fn run() -> Result<(), (u8, String)> {
             .as_ref()
             .and_then(|e| e.json)
             .unwrap_or(false);
+    let with_adapters = cli.with_adapters
+        || config
+            .adapters
+            .as_ref()
+            .and_then(|a| a.enabled)
+            .unwrap_or(false);
 
     let template = cli
         .template
@@ -171,9 +191,10 @@ fn run() -> Result<(), (u8, String)> {
         non_interactive,
         verbose,
         json: json_output,
+        with_adapters,
     };
 
-    let template_files = load_template_files(&options.template)?;
+    let template_files = load_template_files(&options.template, options.with_adapters)?;
     let stats = create_required_files(&root, &template_files, dry_run, force)?;
     print_summary(&stats, &options, &root);
     Ok(())
@@ -194,6 +215,7 @@ fn parse_cli_options(args: impl Iterator<Item = String>) -> Result<CliOptions, (
             "--non-interactive" => cli.non_interactive = true,
             "--verbose" => cli.verbose = true,
             "--json" => cli.json = true,
+            "--with-adapters" => cli.with_adapters = true,
             "--output" => {
                 let value = it.next().ok_or_else(|| {
                     arg_error(
@@ -224,7 +246,7 @@ fn parse_cli_options(args: impl Iterator<Item = String>) -> Result<CliOptions, (
             _ if arg.starts_with('-') => {
                 return Err(arg_error(
                     format!("未対応オプション `{arg}` です。"),
-                    "`aidle init [dir] [--output <path>] [--dry-run] [--force] [--non-interactive] [--verbose] [--json] [--template <name>] [--agent-format <name>]` を使用してください。",
+                    "`aidle init [dir] [--output <path>] [--dry-run] [--force] [--non-interactive] [--verbose] [--json] [--with-adapters] [--template <name>] [--agent-format <name>]` を使用してください。",
                 ));
             }
             _ => {
@@ -320,11 +342,18 @@ fn template_base_dir() -> PathBuf {
     PathBuf::from(env!("CARGO_MANIFEST_DIR")).join("templates")
 }
 
-fn load_template_files(template_name: &str) -> Result<Vec<TemplateFile>, (u8, String)> {
+fn load_template_files(
+    template_name: &str,
+    with_adapters: bool,
+) -> Result<Vec<TemplateFile>, (u8, String)> {
     let template_dir = template_base_dir().join(template_name);
-    let mut files = Vec::with_capacity(DEFAULT_TEMPLATE_FILES.len());
+    let mut paths = DEFAULT_TEMPLATE_FILES.to_vec();
+    if with_adapters {
+        paths.extend(DEFAULT_ADAPTER_TEMPLATE_FILES);
+    }
+    let mut files = Vec::with_capacity(paths.len());
 
-    for rel in DEFAULT_TEMPLATE_FILES {
+    for rel in paths {
         let path = template_dir.join(rel);
         let content = fs::read_to_string(&path).map_err(|e| {
             template_error(
@@ -359,6 +388,7 @@ struct JsonSummary<'a> {
     non_interactive: bool,
     template: &'a str,
     agent_format: &'a str,
+    with_adapters: bool,
     root: String,
 }
 
@@ -371,6 +401,7 @@ fn print_summary(stats: &RunStats, options: &RunOptions, root: &Path) {
             options.agent_format,
             options.non_interactive
         );
+        eprintln!("[verbose] with_adapters={}", options.with_adapters);
     }
 
     if options.json {
@@ -382,6 +413,7 @@ fn print_summary(stats: &RunStats, options: &RunOptions, root: &Path) {
             non_interactive: options.non_interactive,
             template: &options.template,
             agent_format: &options.agent_format,
+            with_adapters: options.with_adapters,
             root: root.display().to_string(),
         };
         println!(

@@ -26,6 +26,9 @@
 - `verbose` (bool, optional, default=`false`): 詳細ログ表示。
 - `json` (bool, optional, default=`false`): 構造化結果出力。
 
+### `[adapters]`
+- `enabled` (bool, optional, default=`false`): GC-2適応レイヤの生成有効化。
+
 ## 4. 優先順位
 1. CLI引数/オプション
 2. `aidle.toml`
@@ -49,4 +52,7 @@ force = false
 dry_run = false
 verbose = false
 json = true
+
+[adapters]
+enabled = true
 ```
