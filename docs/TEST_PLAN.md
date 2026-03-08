@@ -21,6 +21,8 @@
 - `AC-009` -> `TC-021`
 - `AC-011` -> `TC-022`
 - `AC-012` -> `TC-023`
+- `AC-013` -> `TC-024`
+- `AC-014` -> `TC-025`
 
 ## 3. テストケース一覧（初版 / Red）
 
@@ -49,6 +51,8 @@
 | TC-021 | AC-004, AC-009 | integration | 設定ファイルの境界ケース（不正TOML・project root解決）とverbose出力契約を満たす | Green |
 | TC-022 | AC-011 | integration | 適応レイヤ生成を有効化した場合、GC-2対象ファイルが生成される | Green |
 | TC-023 | AC-012 | integration | 適応レイヤ生成が無効（既定）な場合、GC-2対象ファイルは生成されない | Green |
+| TC-024 | AC-013 | integration | `--stats-out` または設定指定時に統計JSONが保存される | Red |
+| TC-025 | AC-014 | integration | 統計ログ未指定（既定）時は統計ファイルが生成されない | Red |
 
 ## 4. 実装順序（推奨）
 1. `TC-001`, `TC-002`（基本生成）
