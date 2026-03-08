@@ -1,9 +1,8 @@
-use assert_cmd::Command;
+use assert_cmd::cargo::cargo_bin_cmd;
 
 #[test]
 fn tc006_argument_error_returns_code_2_and_shows_cause_and_action() {
-    let output = Command::cargo_bin("aidle")
-        .expect("failed to locate aidle binary")
+    let output = cargo_bin_cmd!("aidle")
         .arg("init")
         .arg("--unknown-option")
         .output()

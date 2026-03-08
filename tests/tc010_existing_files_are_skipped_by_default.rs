@@ -1,4 +1,4 @@
-use assert_cmd::Command;
+use assert_cmd::cargo::cargo_bin_cmd;
 use std::fs;
 use tempfile::tempdir;
 
@@ -10,8 +10,7 @@ fn tc010_existing_files_are_not_overwritten_without_force() {
     let original = "# keep me\n";
     fs::write(root.join("AGENTS.md"), original).expect("failed to seed AGENTS.md");
 
-    let output = Command::cargo_bin("aidle")
-        .expect("failed to locate aidle binary")
+    let output = cargo_bin_cmd!("aidle")
         .current_dir(root)
         .arg("init")
         .output()

@@ -1,4 +1,4 @@
-use assert_cmd::Command;
+use assert_cmd::cargo::cargo_bin_cmd;
 use std::path::Path;
 use tempfile::tempdir;
 
@@ -8,8 +8,7 @@ fn tc002_init_with_dir_creates_gc1_required_files_under_target_directory() {
     let workspace = temp.path();
     let project_dir = workspace.join("my-project");
 
-    Command::cargo_bin("aidle")
-        .expect("failed to locate aidle binary")
+    cargo_bin_cmd!("aidle")
         .current_dir(workspace)
         .arg("init")
         .arg("my-project")

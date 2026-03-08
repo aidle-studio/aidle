@@ -1,4 +1,4 @@
-use assert_cmd::Command;
+use assert_cmd::cargo::cargo_bin_cmd;
 use std::fs;
 use tempfile::tempdir;
 
@@ -10,8 +10,7 @@ fn tc007_io_error_returns_code_3_and_shows_cause_and_action() {
     let blocked = root.join("blocked");
     fs::write(&blocked, "not a directory").expect("failed to create blocker file");
 
-    let output = Command::cargo_bin("aidle")
-        .expect("failed to locate aidle binary")
+    let output = cargo_bin_cmd!("aidle")
         .current_dir(root)
         .arg("init")
         .arg("blocked/child")

@@ -1,4 +1,4 @@
-use assert_cmd::Command;
+use assert_cmd::cargo::cargo_bin_cmd;
 use std::path::Path;
 use tempfile::tempdir;
 
@@ -7,8 +7,7 @@ fn tc003_dry_run_does_not_create_gc1_required_files() {
     let temp = tempdir().expect("failed to create temp directory");
     let root = temp.path();
 
-    Command::cargo_bin("aidle")
-        .expect("failed to locate aidle binary")
+    cargo_bin_cmd!("aidle")
         .current_dir(root)
         .arg("init")
         .arg("--dry-run")

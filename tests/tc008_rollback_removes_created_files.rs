@@ -1,4 +1,4 @@
-use assert_cmd::Command;
+use assert_cmd::cargo::cargo_bin_cmd;
 use std::fs;
 use tempfile::tempdir;
 
@@ -10,8 +10,7 @@ fn tc008_on_partial_failure_newly_created_files_are_rolled_back() {
     let blocking_file = root.join("docs");
     fs::write(&blocking_file, "not a directory").expect("failed to create blocking file");
 
-    let output = Command::cargo_bin("aidle")
-        .expect("failed to locate aidle binary")
+    let output = cargo_bin_cmd!("aidle")
         .current_dir(root)
         .arg("init")
         .output()

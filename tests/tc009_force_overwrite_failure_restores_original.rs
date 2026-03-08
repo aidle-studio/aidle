@@ -1,4 +1,4 @@
-use assert_cmd::Command;
+use assert_cmd::cargo::cargo_bin_cmd;
 use std::fs;
 use tempfile::tempdir;
 
@@ -11,8 +11,7 @@ fn tc009_force_overwrite_failure_restores_preexisting_file() {
     fs::write(root.join("AGENTS.md"), original_agents).expect("failed to seed AGENTS.md");
     fs::write(root.join("docs"), "not a directory").expect("failed to create blocking docs file");
 
-    let output = Command::cargo_bin("aidle")
-        .expect("failed to locate aidle binary")
+    let output = cargo_bin_cmd!("aidle")
         .current_dir(root)
         .arg("init")
         .arg("--force")
