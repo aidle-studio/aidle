@@ -49,7 +49,7 @@
 - [x] `--output` 契約テスト（`TC-016`）を追加する
 - [x] `--template` / `--agent-format` 契約テスト（`TC-017` / `TC-018`）を追加する
 
-### MS4: テンプレート分離と保守性向上
+### MS4: テンプレート分離と保守性向上（完了）
 **達成条件**
 - テンプレートが `templates/` に分離され、実装ロジックとテンプレデータが独立している。
 
@@ -63,8 +63,12 @@
 - カバレッジ基準（全体80%/差分90%）を継続計測し、運用フローに組み込む。
 
 **TODO**
-- [ ] `cargo llvm-cov nextest` をCIまたは定期チェック手順に組み込む
-- [ ] カバレッジ未達時の例外運用テンプレート（理由・期限・合意記録）を整備する
+- [x] MS5プランを作成し、合意を記録する（`docs/plans/2026-03-08_MS5.md`）
+- [x] カバレッジ運用Runbookを整備する（`docs/COVERAGE_RUNBOOK.md`）
+- [x] カバレッジ未達時の例外運用テンプレートを整備する（`docs/COVERAGE_EXCEPTION_TEMPLATE.md`）
+- [ ] `cargo llvm-cov nextest` をCI品質ゲートへ組み込む
+- [ ] 差分カバレッジ90%の自動判定を導入する
+- [ ] 通し検証（ローカル/CI）を実施し、MS5達成を記録する
 
 ## 改善アイデア（マイルストーン外）
 - [ ] `.github/copilot-instructions.md` と `.github/instructions/*.instructions.md` の生成テンプレートを追加する

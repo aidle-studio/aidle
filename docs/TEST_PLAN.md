@@ -74,6 +74,7 @@
 1. `cargo nextest run`
 2. `cargo llvm-cov nextest --workspace --lcov --output-path coverage.lcov`
 3. レポートを確認し、全体80%以上かつ変更モジュール90%以上（原則必須）を判定する
+4. 詳細運用は `docs/COVERAGE_RUNBOOK.md` に従う
 
 ## 9. 合意・更新ルール
 - 新しい `AC-*` が追加された場合、同一PR内で `TC-*` を追加する。
