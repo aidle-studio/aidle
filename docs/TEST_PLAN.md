@@ -13,7 +13,7 @@
 - `AC-001` -> `TC-012`
 - `AC-006` -> `TC-013`
 - `AC-007` -> `TC-014`
-- `AC-008` -> `TC-015`
+- `AC-008` -> `TC-015`, `TC-026`, `TC-027`
 - `AC-009` -> `TC-016`
 - `AC-010` -> `TC-017`, `TC-018`
 - `AC-004` -> `TC-019`
@@ -53,6 +53,8 @@
 | TC-023 | AC-012 | integration | 適応レイヤ生成が無効（既定）な場合、GC-2対象ファイルは生成されない | Green |
 | TC-024 | AC-013 | integration | `--stats-out` または設定指定時に統計JSONが保存される | Green |
 | TC-025 | AC-014 | integration | 統計ログ未指定（既定）時は統計ファイルが生成されない | Green |
+| TC-026 | AC-008 | integration | TTY接続時かつ対話モード有効時にプロンプトが表示され入力値が反映される | Red |
+| TC-027 | AC-008 | integration | `execution.non_interactive=true` 設定時にプロンプトがスキップされる | Red |
 
 ## 4. 実装順序（推奨）
 1. `TC-001`, `TC-002`（基本生成）
