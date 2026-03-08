@@ -1,0 +1,55 @@
+name: Coverage Gate
+
+on:
+  pull_request:
+  push:
+    branches:
+      - master
+
+permissions:
+  contents: read
+
+jobs:
+  coverage:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Setup Rust
+        uses: dtolnay/rust-toolchain@stable
+
+      - name: Install nextest and llvm-cov
+        uses: taiki-e/install-action@v2
+        with:
+          tool: cargo-nextest,cargo-llvm-cov
+
+      - name: Run tests
+        run: cargo nextest run
+
+      - name: Collect coverage
+        run: cargo llvm-cov nextest --workspace --lcov --output-path coverage.lcov
+
+      - name: Set base ref
+        run: |
+          if [ "${{ github.event_name }}" = "pull_request" ]; then
+            git fetch --no-tags --depth=1 origin "${{ github.base_ref }}"
+            echo "BASE_REF=origin/${{ github.base_ref }}" >> "$GITHUB_ENV"
+          else
+            echo "BASE_REF=HEAD~1" >> "$GITHUB_ENV"
+          fi
+
+      - name: Check coverage thresholds
+        env:
+          MIN_TOTAL: "80"
+          MIN_DIFF: "90"
+        run: ./scripts/check_coverage_gate.sh coverage.lcov
+
+      - name: Upload lcov artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: coverage-lcov
+          path: coverage.lcov
+

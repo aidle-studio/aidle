@@ -40,6 +40,7 @@
 - 重要フロー（init正常系、dry-run、エラー契約、ロールバック）は統合テスト必須
 - 実行手順は `docs/COVERAGE_RUNBOOK.md` を正本とする
 - 例外申請は `docs/COVERAGE_EXCEPTION_TEMPLATE.md` を使用する
+- CI品質ゲートは `.github/workflows/coverage-gate.yml` を正本とする
 
 ## 8. レビュー基準
 - 仕様・テスト・実装のトレーサビリティがあること

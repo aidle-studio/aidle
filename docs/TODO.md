@@ -58,7 +58,7 @@
 - [x] コード直書きテンプレートを廃止する
 - [x] テンプレート読み込み失敗時のエラー契約を追加する
 
-### MS5: 品質ゲート運用の定着
+### MS5: 品質ゲート運用の定着（完了）
 **達成条件**
 - カバレッジ基準（全体80%/差分90%）を継続計測し、運用フローに組み込む。
 
@@ -66,9 +66,9 @@
 - [x] MS5プランを作成し、合意を記録する（`docs/plans/2026-03-08_MS5.md`）
 - [x] カバレッジ運用Runbookを整備する（`docs/COVERAGE_RUNBOOK.md`）
 - [x] カバレッジ未達時の例外運用テンプレートを整備する（`docs/COVERAGE_EXCEPTION_TEMPLATE.md`）
-- [ ] `cargo llvm-cov nextest` をCI品質ゲートへ組み込む
-- [ ] 差分カバレッジ90%の自動判定を導入する
-- [ ] 通し検証（ローカル/CI）を実施し、MS5達成を記録する
+- [x] `cargo llvm-cov nextest` をCI品質ゲートへ組み込む
+- [x] 差分カバレッジ90%の自動判定を導入する
+- [x] 通し検証（ローカル/CI）を実施し、MS5達成を記録する
 
 ## 改善アイデア（マイルストーン外）
 - [ ] `.github/copilot-instructions.md` と `.github/instructions/*.instructions.md` の生成テンプレートを追加する
