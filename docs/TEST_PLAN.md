@@ -12,6 +12,10 @@
 - `AC-006` -> `TC-010`, `TC-011`
 - `AC-001` -> `TC-012`
 - `AC-006` -> `TC-013`
+- `AC-007` -> `TC-014`
+- `AC-008` -> `TC-015`
+- `AC-009` -> `TC-016`
+- `AC-010` -> `TC-017`, `TC-018`
 
 ## 3. テストケース一覧（初版 / Red）
 
@@ -30,6 +34,11 @@
 | TC-011 | AC-006 | integration | 既存ディレクトリ導入時、`--force` で既存ファイルが上書きされる | Green |
 | TC-012 | AC-001 | integration | `aidle.toml` の `execution.dry_run=true` がCLI未指定時に適用される | Green |
 | TC-013 | AC-006 | integration | `aidle.toml` の `execution.force=true` がCLI未指定時に適用される | Green |
+| TC-014 | AC-007 | integration | `--json` 指定時に `created/updated/skipped/errors` を含むJSONを返す | Green |
+| TC-015 | AC-008 | integration | `--non-interactive` 指定時に非対話モードが有効化される | Green |
+| TC-016 | AC-009 | integration | `--output` 指定時に指定パス配下へ生成される | Green |
+| TC-017 | AC-010 | integration | 未対応 `--template` 値で終了コード2と原因/対処を返す | Green |
+| TC-018 | AC-010 | integration | 未対応 `--agent-format` 値で終了コード2と原因/対処を返す | Green |
 
 ## 4. 実装順序（推奨）
 1. `TC-001`, `TC-002`（基本生成）
@@ -49,7 +58,7 @@
 - 計測対象は `src/` 配下のRustコードとする。
 - 最低基準は行カバレッジ 80% とする。
 - 変更対象モジュールの差分カバレッジは 90% を原則必須（CIゲート）とする。
-- 必須フロー（`TC-001`〜`TC-013`）に対応する統合テストは、常に実行対象とする。
+- 必須フロー（`TC-001`〜`TC-018`）に対応する統合テストは、常に実行対象とする。
 - 差分カバレッジ未達を例外的に許容する場合、PRに未達理由、期限付き追補予定、合意記録を記載する。
 
 ## 7. テスト実行品質（タイムアウト）

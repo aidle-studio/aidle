@@ -1,6 +1,8 @@
-use serde::Deserialize;
+use serde::{Deserialize, Serialize};
+use serde_json::json;
 use std::env;
 use std::fs::{self, OpenOptions};
+use std::io::IsTerminal;
 use std::io::Write;
 use std::path::{Path, PathBuf};
 use std::process::ExitCode;
@@ -48,9 +50,33 @@ struct RunStats {
     errors: usize,
 }
 
+#[derive(Debug)]
+struct RunOptions {
+    template: String,
+    agent_format: String,
+    non_interactive: bool,
+    verbose: bool,
+    json: bool,
+}
+
+#[derive(Debug, Default)]
+struct CliOptions {
+    dir: Option<PathBuf>,
+    output: Option<PathBuf>,
+    dry_run: bool,
+    force: bool,
+    non_interactive: bool,
+    verbose: bool,
+    json: bool,
+    template: Option<String>,
+    agent_format: Option<String>,
+}
+
 #[derive(Debug, Default, Deserialize)]
 struct AidleConfig {
     project: Option<ProjectConfig>,
+    template: Option<TemplateConfig>,
+    agent: Option<AgentConfig>,
     execution: Option<ExecutionConfig>,
 }
 
@@ -61,9 +87,22 @@ struct ProjectConfig {
 }
 
 #[derive(Debug, Default, Deserialize)]
+struct TemplateConfig {
+    name: Option<String>,
+}
+
+#[derive(Debug, Default, Deserialize)]
+struct AgentConfig {
+    format: Option<String>,
+}
+
+#[derive(Debug, Default, Deserialize)]
 struct ExecutionConfig {
     force: Option<bool>,
     dry_run: Option<bool>,
+    non_interactive: Option<bool>,
+    verbose: Option<bool>,
+    json: Option<bool>,
 }
 
 fn main() -> ExitCode {
@@ -97,51 +136,127 @@ fn run() -> Result<(), (u8, String)> {
         ));
     }
 
-    let mut cli_dry_run = false;
-    let mut cli_force = false;
-    let mut dir: Option<PathBuf> = None;
+    let cli = parse_cli_options(args)?;
 
-    for arg in args {
-        if arg == "--dry-run" {
-            cli_dry_run = true;
-            continue;
-        }
-        if arg == "--force" {
-            cli_force = true;
-            continue;
-        }
+    let root = resolve_root(&cwd, &config, &cli)?;
+    let force = cli.force || config.execution.as_ref().and_then(|e| e.force).unwrap_or(false);
+    let dry_run = cli.dry_run || config.execution.as_ref().and_then(|e| e.dry_run).unwrap_or(false);
+    let non_interactive = cli.non_interactive
+        || config
+            .execution
+            .as_ref()
+            .and_then(|e| e.non_interactive)
+            .unwrap_or(false)
+        || !std::io::stdin().is_terminal();
+    let verbose = cli.verbose
+        || config
+            .execution
+            .as_ref()
+            .and_then(|e| e.verbose)
+            .unwrap_or(false);
+    let json_output = cli.json
+        || config
+            .execution
+            .as_ref()
+            .and_then(|e| e.json)
+            .unwrap_or(false);
 
-        if arg.starts_with('-') {
-            return Err((
-                2,
-                format!(
-                    "引数エラー: 未対応オプション `{arg}` です。対処: `aidle init [dir] [--dry-run] [--force]` を使用してください。"
-                ),
-            ));
-        }
-
-        if dir.is_some() {
-            return Err((
-                2,
-                "引数エラー: `init` に指定できるディレクトリは1つまでです。対処: `aidle init [dir] [--dry-run] [--force]` で実行してください。"
-                    .to_string(),
-            ));
-        }
-
-        dir = Some(PathBuf::from(arg));
+    let template = cli
+        .template
+        .or_else(|| config.template.as_ref().and_then(|t| t.name.clone()))
+        .unwrap_or_else(|| "default".to_string());
+    if template != "default" {
+        return Err(arg_error(
+            format!("未対応テンプレート `{template}` です。"),
+            "サポート対象のテンプレート名を指定してください（現在は `default` のみ）。",
+        ));
     }
 
-    let root = match dir {
-        Some(path) => path,
-        None => resolve_root(&cwd, &config),
+    let agent_format = cli
+        .agent_format
+        .or_else(|| config.agent.as_ref().and_then(|a| a.format.clone()))
+        .unwrap_or_else(|| "agents-md".to_string());
+    if agent_format != "agents-md" {
+        return Err(arg_error(
+            format!("未対応 agent-format `{agent_format}` です。"),
+            "サポート対象の agent-format を指定してください（現在は `agents-md` のみ）。",
+        ));
+    }
+
+    let options = RunOptions {
+        template,
+        agent_format,
+        non_interactive,
+        verbose,
+        json: json_output,
     };
-    let force = cli_force || config.execution.as_ref().and_then(|e| e.force).unwrap_or(false);
-    let dry_run =
-        cli_dry_run || config.execution.as_ref().and_then(|e| e.dry_run).unwrap_or(false);
 
     let stats = create_required_files(&root, dry_run, force)?;
-    print_summary(&stats);
+    print_summary(&stats, &options, &root);
     Ok(())
+}
+
+fn arg_error(cause: String, action: &str) -> (u8, String) {
+    (2, format!("引数エラー: {cause}\n対処: {action}"))
+}
+
+fn parse_cli_options(args: impl Iterator<Item = String>) -> Result<CliOptions, (u8, String)> {
+    let mut cli = CliOptions::default();
+    let mut it = args.peekable();
+
+    while let Some(arg) = it.next() {
+        match arg.as_str() {
+            "--dry-run" => cli.dry_run = true,
+            "--force" => cli.force = true,
+            "--non-interactive" => cli.non_interactive = true,
+            "--verbose" => cli.verbose = true,
+            "--json" => cli.json = true,
+            "--output" => {
+                let value = it.next().ok_or_else(|| {
+                    arg_error(
+                        "`--output` の値が不足しています。".to_string(),
+                        "`--output <path>` の形式で指定してください。",
+                    )
+                })?;
+                cli.output = Some(PathBuf::from(value));
+            }
+            "--template" => {
+                let value = it.next().ok_or_else(|| {
+                    arg_error(
+                        "`--template` の値が不足しています。".to_string(),
+                        "`--template <name>` の形式で指定してください。",
+                    )
+                })?;
+                cli.template = Some(value);
+            }
+            "--agent-format" => {
+                let value = it.next().ok_or_else(|| {
+                    arg_error(
+                        "`--agent-format` の値が不足しています。".to_string(),
+                        "`--agent-format <name>` の形式で指定してください。",
+                    )
+                })?;
+                cli.agent_format = Some(value);
+            }
+            _ if arg.starts_with('-') => {
+                return Err(arg_error(
+                    format!("未対応オプション `{arg}` です。"),
+                    "`aidle init [dir] [--output <path>] [--dry-run] [--force] [--non-interactive] [--verbose] [--json] [--template <name>] [--agent-format <name>]` を使用してください。",
+                ));
+            }
+            _ => {
+                if cli.dir.is_some() {
+                    return Err(arg_error(
+                        "`init` に指定できるディレクトリは1つまでです。".to_string(),
+                        "`aidle init [dir]` の形式で実行してください。",
+                    ));
+                }
+                cli.dir = Some(PathBuf::from(arg));
+            }
+        }
+    }
+
+    Ok(cli)
 }
 
 fn load_config(cwd: &Path) -> Result<AidleConfig, (u8, String)> {
@@ -169,7 +284,22 @@ fn load_config(cwd: &Path) -> Result<AidleConfig, (u8, String)> {
     })
 }
 
-fn resolve_root(cwd: &Path, config: &AidleConfig) -> PathBuf {
+fn resolve_root(cwd: &Path, config: &AidleConfig, cli: &CliOptions) -> Result<PathBuf, (u8, String)> {
+    if cli.dir.is_some() && cli.output.is_some() {
+        return Err(arg_error(
+            "`dir` と `--output` の同時指定はできません。".to_string(),
+            "どちらか一方のみ指定してください。",
+        ));
+    }
+
+    if let Some(path) = cli.output.as_ref().or(cli.dir.as_ref()) {
+        return Ok(if path.is_absolute() {
+            path.clone()
+        } else {
+            cwd.join(path)
+        });
+    }
+
     let from_config = config
         .project
         .as_ref()
@@ -178,9 +308,9 @@ fn resolve_root(cwd: &Path, config: &AidleConfig) -> PathBuf {
     match from_config {
         Some(path) => {
             let p = PathBuf::from(path);
-            if p.is_absolute() { p } else { cwd.join(p) }
+            Ok(if p.is_absolute() { p } else { cwd.join(p) })
         }
-        None => cwd.to_path_buf(),
+        None => Ok(cwd.to_path_buf()),
     }
 }
 
@@ -202,7 +332,47 @@ fn rollback_state(created_files: &[PathBuf], overwritten_files: &[(PathBuf, Vec<
     }
 }
 
-fn print_summary(stats: &RunStats) {
+#[derive(Serialize)]
+struct JsonSummary<'a> {
+    created: usize,
+    updated: usize,
+    skipped: usize,
+    errors: usize,
+    non_interactive: bool,
+    template: &'a str,
+    agent_format: &'a str,
+    root: String,
+}
+
+fn print_summary(stats: &RunStats, options: &RunOptions, root: &Path) {
+    if options.verbose {
+        eprintln!(
+            "[verbose] root={} template={} agent_format={} non_interactive={}",
+            root.display(),
+            options.template,
+            options.agent_format,
+            options.non_interactive
+        );
+    }
+
+    if options.json {
+        let payload = JsonSummary {
+            created: stats.created,
+            updated: stats.updated,
+            skipped: stats.skipped,
+            errors: stats.errors,
+            non_interactive: options.non_interactive,
+            template: &options.template,
+            agent_format: &options.agent_format,
+            root: root.display().to_string(),
+        };
+        println!(
+            "{}",
+            serde_json::to_string(&json!(payload)).expect("failed to serialize json summary")
+        );
+        return;
+    }
+
     println!(
         "created={} updated={} skipped={} errors={}",
         stats.created, stats.updated, stats.skipped, stats.errors

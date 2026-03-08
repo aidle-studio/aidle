@@ -20,7 +20,7 @@
 - [x] ADR整理（P1-6）
 - [x] `aidle.toml` スキーマ初版定義（ADR-0003 Follow-up）
 
-### MS2: Core Init動作の仕様準拠（進行中）
+### MS2: Core Init動作の仕様準拠（完了）
 **達成条件**
 - AC-001〜AC-006 を満たす主要フローが実装され、対応テストが Green である。
 
@@ -32,22 +32,22 @@
 - [x] `TC-012` / `TC-013` を `docs/TEST_PLAN.md` に正式追記する（ACトレーサビリティ維持）
 - [x] `nextest.toml` を作成し、タイムアウト規約（15s/45s/90s）を実設定する
 
-### MS3: CLIオプションと設定適用の完成
+### MS3: CLIオプションと設定適用の完成（完了）
 **達成条件**
 - `SPEC.md` で定義した主要オプションと config キーが実装済みで、契約テストが存在する。
 
 **TODO**
-- [ ] `--json` を実装し、`created/updated/skipped/errors` を機械可読で返す
-- [ ] `--non-interactive` を実装し、TTYなし時の自動非対話モードを反映する
-- [ ] `--output <path>` を実装し、優先順位（CLI > config > default）を担保する
-- [ ] `--verbose` を実装し、通常出力と詳細ログを分離する
-- [ ] `--template <name>` を実装し、未対応テンプレート時は終了コード `2` で失敗させる
-- [ ] `--agent-format <name>` を実装する（初期は `agents-md` のみ正式サポート）
-- [ ] `aidle.toml` の未実装キー（`template.name`, `agent.format`, `execution.non_interactive`, `execution.verbose`, `execution.json`）を反映する
-- [ ] `--json` 契約テスト（仮: `TC-014`）を追加する
-- [ ] `--non-interactive` 契約テスト（仮: `TC-015`）を追加する
-- [ ] `--output` 契約テスト（仮: `TC-016`）を追加する
-- [ ] `--template` / `--agent-format` 契約テスト（仮: `TC-017` / `TC-018`）を追加する
+- [x] `--json` を実装し、`created/updated/skipped/errors` を機械可読で返す
+- [x] `--non-interactive` を実装し、TTYなし時の自動非対話モードを反映する
+- [x] `--output <path>` を実装し、優先順位（CLI > config > default）を担保する
+- [x] `--verbose` を実装し、通常出力と詳細ログを分離する
+- [x] `--template <name>` を実装し、未対応テンプレート時は終了コード `2` で失敗させる
+- [x] `--agent-format <name>` を実装する（初期は `agents-md` のみ正式サポート）
+- [x] `aidle.toml` の未実装キー（`template.name`, `agent.format`, `execution.non_interactive`, `execution.verbose`, `execution.json`）を反映する
+- [x] `--json` 契約テスト（`TC-014`）を追加する
+- [x] `--non-interactive` 契約テスト（`TC-015`）を追加する
+- [x] `--output` 契約テスト（`TC-016`）を追加する
+- [x] `--template` / `--agent-format` 契約テスト（`TC-017` / `TC-018`）を追加する
 
 ### MS4: テンプレート分離と保守性向上
 **達成条件**
