@@ -144,7 +144,6 @@ fn run() -> Result<(), (u8, String)> {
 
     let cli = parse_cli_options(args)?;
 
-    let root = resolve_root(&cwd, &config, &cli)?;
     let force = cli.force || config.execution.as_ref().and_then(|e| e.force).unwrap_or(false);
     let dry_run = cli.dry_run || config.execution.as_ref().and_then(|e| e.dry_run).unwrap_or(false);
     let non_interactive = cli.non_interactive
@@ -176,8 +175,9 @@ fn run() -> Result<(), (u8, String)> {
         .stats_out
         .clone()
         .or_else(|| config.stats.as_ref().and_then(|s| s.output.clone().map(PathBuf::from)));
+    let mut interactive_project_name: Option<String> = None;
 
-    let default_project_name = root
+    let default_project_name = cwd
         .file_name()
         .map(|s| s.to_string_lossy().to_string())
         .unwrap_or_default();
@@ -185,11 +185,16 @@ fn run() -> Result<(), (u8, String)> {
     if !non_interactive {
         use dialoguer::{theme::ColorfulTheme, Confirm, Input};
 
-        let _ = Input::<String>::with_theme(&ColorfulTheme::default())
+        if let Ok(input) = Input::<String>::with_theme(&ColorfulTheme::default())
             .with_prompt("Project Name")
             .default(default_project_name)
             .interact()
-            .ok();
+        {
+            let trimmed = input.trim();
+            if !trimmed.is_empty() {
+                interactive_project_name = Some(trimmed.to_string());
+            }
+        }
 
         if !cli.with_adapters && config.adapters.as_ref().and_then(|a| a.enabled).is_none() {
             if let Ok(enable) = Confirm::with_theme(&ColorfulTheme::default())
@@ -201,6 +206,26 @@ fn run() -> Result<(), (u8, String)> {
             }
         }
     }
+
+    let root = if cli.dir.is_none()
+        && cli.output.is_none()
+        && config
+            .project
+            .as_ref()
+            .and_then(|p| p.output.as_ref().or(p.name.as_ref()))
+            .is_none()
+    {
+        let cwd_name = cwd
+            .file_name()
+            .map(|s| s.to_string_lossy().to_string())
+            .unwrap_or_default();
+        match interactive_project_name {
+            Some(name) if name != cwd_name => cwd.join(name),
+            _ => resolve_root(&cwd, &config, &cli)?,
+        }
+    } else {
+        resolve_root(&cwd, &config, &cli)?
+    };
 
     let template = cli
         .template

@@ -27,12 +27,21 @@ fn tc026_tty_interactive_mode_prompts_and_applies_input() {
     // Wait for the command to finish
     p.exp_eof().expect("expected EOF");
 
-    let claude = root.join("CLAUDE.md");
+    let project_root = root.join("MyAwesomeProject");
+    let claude = project_root.join("CLAUDE.md");
 
     // We expect that `--with-adapters` was effectively set to true 
     // because we answered 'y' to the second prompt!
     assert!(
         claude.exists(),
         "CLAUDE.md must exist because we answered 'y' to the adapter prompt"
+    );
+    assert!(
+        project_root.join("AGENTS.md").exists(),
+        "AGENTS.md must be created under the interactive project name directory"
+    );
+    assert!(
+        !root.join("AGENTS.md").exists(),
+        "AGENTS.md should not be created at the original root when project name is specified"
     );
 }
