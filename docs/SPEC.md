@@ -54,6 +54,7 @@
 - `--output <path>`: 生成先ルートを指定
 - `--verbose`: 詳細ログを表示
 - `--json`: 実行結果を構造化出力（created/skipped/errors）
+- `--with-adapters`: GC-2適応レイヤ（`.github` / `GEMINI.md` / `CLAUDE.md`）を生成
 
 ### 実行モード方針
 - 人間向け実行では、既定で対話的に不足情報を補完できる。
