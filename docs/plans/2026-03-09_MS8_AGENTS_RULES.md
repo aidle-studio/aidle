@@ -5,7 +5,7 @@
 - Milestone Name: `AGENTS.md` と `RULES.md` テンプレートの汎用化
 - Date: 2026-03-09
 - Owner: Gemini (AI)
-- Status: Agreed
+- Status: Done
 
 ## Goal
 - `templates/default/AGENTS.md` と `templates/default/docs/RULES.md` を、特定のプロジェクト（Rustやaidle）に依存しない汎用的なAI駆動開発（AIDD）のベストプラクティスを反映したテンプレートとして完成させる。
@@ -19,11 +19,11 @@
   - Rustコード（CLI本体）の実装変更
 
 ## Tasks
-- [ ] T1: `templates/default/AGENTS.md` の作成
+- [x] T1: `templates/default/AGENTS.md` の作成
   - 現在のプロジェクトの `AGENTS.md` をベースに、特定の言語やツールに依存しない形（例えば「検証」の例からclippyなどを外す）で、TDDサイクルと合意ゲートのルールを汎用化して記述する。
-- [ ] T2: `templates/default/docs/RULES.md` の作成
+- [x] T2: `templates/default/docs/RULES.md` の作成
   - 現在の `docs/RULES.md` から、汎用的な「仕様駆動（SDD）」「TDDサイクル」「AI駆動開発の標準手順」「コミット規約」を抽出し、プロジェクト固有の品質ゲート（カバレッジパーセンテージやRust専用ツール）をプレースホルダー化して記述する。
-- [ ] T3: せんぱいのレビューと合意形成
+- [x] T3: せんぱいのレビューと合意形成
 
 ## Iteration Plan
 1. Iteration 1: 汎用化案の作成と適用（T1, T2）
