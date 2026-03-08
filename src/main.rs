@@ -5,14 +5,38 @@ use std::path::{Path, PathBuf};
 use std::process::ExitCode;
 
 const REQUIRED_FILES: [(&str, &str); 8] = [
-    ("AGENTS.md", "# AGENTS.md\n"),
-    ("README.md", "# README.md\n"),
-    ("docs/AGENT_CONTEXT.md", "# AGENT_CONTEXT.md\n"),
-    ("docs/RULES.md", "# RULES.md\n"),
-    ("docs/SPEC.md", "# SPEC.md\n"),
-    ("docs/TODO.md", "# TODO.md\n"),
-    ("docs/TEST_PLAN.md", "# TEST_PLAN.md\n"),
-    ("docs/KNOWLEDGE.md", "# KNOWLEDGE.md\n"),
+    (
+        "AGENTS.md",
+        "# AGENTS.md\n\n仕様検討は合意後に実装へ進みます。\n",
+    ),
+    (
+        "README.md",
+        "# README.md\n\n`aidle init` でAIDD向け初期構成を生成します。\n",
+    ),
+    (
+        "docs/AGENT_CONTEXT.md",
+        "# AGENT_CONTEXT.md\n\n## 現在フェーズ\n- 実装フェーズ\n",
+    ),
+    (
+        "docs/RULES.md",
+        "# RULES.md\n\n## TDDサイクル\n- Red -> Green -> Refactor\n\n## Definition of Done\n- 対応テストがGreenであること\n",
+    ),
+    (
+        "docs/SPEC.md",
+        "# SPEC.md\n\n## 1. 目的\n`aidle` はAIDDの初期セットアップを支援するCLIです。\n",
+    ),
+    (
+        "docs/TODO.md",
+        "# TODO.md\n\n## 合意ゲート\n- 提案 -> 合意 -> 反映\n",
+    ),
+    (
+        "docs/TEST_PLAN.md",
+        "# TEST_PLAN.md\n\n## トレーサビリティ\n- AC-* -> TC-*\n",
+    ),
+    (
+        "docs/KNOWLEDGE.md",
+        "# KNOWLEDGE.md\n\n## ADR\n- 設計判断を記録\n",
+    ),
 ];
 
 #[derive(Default)]

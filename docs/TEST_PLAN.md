@@ -18,8 +18,8 @@
 | TC-001 | AC-001 | integration | `aidle init` でカレント配下にGC-1必須ファイルが生成される | Green |
 | TC-002 | AC-001 | integration | `aidle init <dir>` で指定ディレクトリ配下にGC-1必須ファイルが生成される | Green |
 | TC-003 | AC-001 | integration | `--dry-run` 時にファイルは作成されず、作成予定のみ出力される | Green |
-| TC-004 | AC-002 | integration | 生成ドキュメントに開発手順・合意ゲートを示す必須見出しが含まれる | Red |
-| TC-005 | AC-003 | integration | TDDサイクルとDefinition of Doneが規約ファイルに存在する | Red |
+| TC-004 | AC-002 | integration | 生成ドキュメントに開発手順・合意ゲートを示す必須見出しが含まれる | Green |
+| TC-005 | AC-003 | integration | TDDサイクルとDefinition of Doneが規約ファイルに存在する | Green |
 | TC-006 | AC-004 | integration | 引数エラー時に終了コード2と原因/対処メッセージが出力される | Green |
 | TC-007 | AC-004 | integration | I/Oエラー時に終了コード3と原因/対処メッセージが出力される | Green |
 | TC-008 | AC-005 | integration | 途中失敗時、新規作成ファイルがロールバックで削除される | Green |

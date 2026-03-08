@@ -20,7 +20,10 @@ fn tc011_force_overwrites_existing_file_and_reports_updated() {
     assert_eq!(output.status.code(), Some(0), "exit code must be 0");
 
     let agents = fs::read_to_string(root.join("AGENTS.md")).expect("failed to read AGENTS.md");
-    assert_eq!(agents, "# AGENTS.md\n", "AGENTS.md must be overwritten with template content");
+    assert!(
+        agents.starts_with("# AGENTS.md\n"),
+        "AGENTS.md must be overwritten with template content: {agents}"
+    );
 
     let stdout = String::from_utf8_lossy(&output.stdout);
     assert!(
