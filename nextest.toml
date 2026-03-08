@@ -1,0 +1,13 @@
+[profile.default]
+# Default timeout budget for normal tests.
+slow-timeout = { period = "15s", terminate-after = 1 }
+
+[[profile.default.overrides]]
+# Slow tests should include `_slow_` in test names.
+filter = 'test(/_slow_/)'
+slow-timeout = { period = "45s", terminate-after = 1 }
+
+[[profile.default.overrides]]
+# Very slow tests are exception-only and must include `_very_slow_` in names.
+filter = 'test(/_very_slow_/)'
+slow-timeout = { period = "90s", terminate-after = 1 }
