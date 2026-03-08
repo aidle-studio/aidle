@@ -15,13 +15,31 @@ fn tc004_generated_docs_include_process_and_agreement_headings() {
 
     let spec = fs::read_to_string(root.join("docs/SPEC.md")).expect("failed to read SPEC.md");
     let todo = fs::read_to_string(root.join("docs/TODO.md")).expect("failed to read TODO.md");
+    let rules = fs::read_to_string(root.join("docs/RULES.md")).expect("failed to read RULES.md");
+    let test_plan = fs::read_to_string(root.join("docs/TEST_PLAN.md")).expect("failed to read TEST_PLAN.md");
 
     assert!(
         spec.contains("## 1. 目的"),
         "SPEC.md must include process-related structure: {spec}"
     );
     assert!(
+        spec.contains("## 5. 受け入れ基準"),
+        "SPEC.md must include acceptance criteria section: {spec}"
+    );
+    assert!(
         todo.contains("合意ゲート"),
         "TODO.md must include agreement gate heading: {todo}"
+    );
+    assert!(
+        rules.contains("合意ゲート"),
+        "RULES.md must mention agreement gate: {rules}"
+    );
+    assert!(
+        rules.contains("TDDサイクル"),
+        "RULES.md must contain TDD cycle: {rules}"
+    );
+    assert!(
+        test_plan.contains("トレーサビリティ"),
+        "TEST_PLAN.md must contain traceability matrix: {test_plan}"
     );
 }
