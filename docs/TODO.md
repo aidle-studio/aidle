@@ -39,4 +39,4 @@
 
 ## 実装前バックログ（追加）
 
-- [ ] `aidle.toml` スキーマ初版を定義する（ADR-0003 Follow-up）
+- [x] `aidle.toml` スキーマ初版を定義する（ADR-0003 Follow-up）
