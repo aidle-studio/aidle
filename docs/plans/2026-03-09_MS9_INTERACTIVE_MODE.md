@@ -1,11 +1,11 @@
-# PLAN_TEMPLATE.md
+# MS9 Plan (2026-03-09)
 
 ## Plan Meta
 - Milestone ID: MS9
 - Milestone Name: 対話モードの実装
 - Date: 2026-03-09
 - Owner: Gemini (AI)
-- Status: Agreed
+- Status: Done
 
 ## Goal
 - TTY接続時（人間が実行したとき）に、プロジェクトの初期化に必要な不足情報を対話形式（プロンプト）で補完できる機能を提供する。
@@ -27,11 +27,11 @@
   - 何を対話で聞くべきか（プロジェクト名、言語、AI設定など）の必須項目を整理し、`docs/SPEC.md` に反映する。
 - [x] T2: 技術選定と ADR 作成
   - Rustの対話プロンプト用ライブラリ（`dialoguer`, `inquire` 等）を比較・選定し、`docs/KNOWLEDGE.md` に ADR を追加する。
-- [ ] T3: 対話プロンプトの実装
+- [x] T3: 対話プロンプトの実装
   - 選定したライブラリを用いて、TTY接続時に起動する対話モードを実装する。
-- [ ] T4: 契約テストの実装
+- [x] T4: 契約テストの実装
   - 擬似TTYを用いた対話モードのテスト、および `--non-interactive` オプションでのプロンプトスキップのテストを実装し、Green にする。
-- [ ] T5: ドキュメント更新
+- [x] T5: ドキュメント更新
   - TTY判定の仕様などを README や HELP に反映し、MS9を完了とする。
 
 ## Iteration Plan
@@ -45,7 +45,9 @@
 - 合意者: せんぱい (ユーザー), Gemini (AI)
 
 ## Execution Log
-- (empty)
+- 2026-03-09: Iteration 1 完了（T1, T2）。仕様化と技術選定（dialoguer）を反映。
+- 2026-03-09: Iteration 2 完了（T3, T4）。対話プロンプト実装と `TC-026` / `TC-027` をGreen化。
+- 2026-03-09: Iteration 3 完了（T5）。READMEにTTY/非TTY挙動を追記し、MS9を完了。
 
 ## Re-plan Notes
 - (empty)

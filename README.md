@@ -22,6 +22,18 @@
 
 `aidle` を使って、新しいプロジェクトの「ステージ」をセットアップしましょう。
 
+```bash
+aidle init
+aidle init my-project --with-adapters
+aidle init --non-interactive --stats-out logs/aidle-stats.json
+```
+
+## 🧭 実行モード
+
+- TTY接続時かつ `--non-interactive` 未指定: 対話プロンプトで不足情報を補完します。
+- `--non-interactive` 指定時: プロンプトを出さずに実行します。
+- TTY非接続時（CI等）: 自動で非対話モードとして実行します。
+
 ## 📁 生成されるプロジェクト構造
 
 AI駆動開発（AIDD）を円滑にするための特別なファイルが含まれます。

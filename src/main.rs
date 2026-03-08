@@ -166,7 +166,7 @@ fn run() -> Result<(), (u8, String)> {
             .as_ref()
             .and_then(|e| e.json)
             .unwrap_or(false);
-    let with_adapters = cli.with_adapters
+    let mut with_adapters = cli.with_adapters
         || config
             .adapters
             .as_ref()
@@ -176,6 +176,31 @@ fn run() -> Result<(), (u8, String)> {
         .stats_out
         .clone()
         .or_else(|| config.stats.as_ref().and_then(|s| s.output.clone().map(PathBuf::from)));
+
+    let default_project_name = root
+        .file_name()
+        .map(|s| s.to_string_lossy().to_string())
+        .unwrap_or_default();
+
+    if !non_interactive {
+        use dialoguer::{theme::ColorfulTheme, Confirm, Input};
+
+        let _ = Input::<String>::with_theme(&ColorfulTheme::default())
+            .with_prompt("Project Name")
+            .default(default_project_name)
+            .interact()
+            .ok();
+
+        if !cli.with_adapters && config.adapters.as_ref().and_then(|a| a.enabled).is_none() {
+            if let Ok(enable) = Confirm::with_theme(&ColorfulTheme::default())
+                .with_prompt("Generate AI Adapters?")
+                .default(false)
+                .interact()
+            {
+                with_adapters = enable;
+            }
+        }
+    }
 
     let template = cli
         .template
