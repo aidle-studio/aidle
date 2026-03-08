@@ -5,7 +5,7 @@
 - Milestone Name: 対話モードの実装
 - Date: 2026-03-09
 - Owner: Gemini (AI)
-- Status: Draft
+- Status: Agreed
 
 ## Goal
 - TTY接続時（人間が実行したとき）に、プロジェクトの初期化に必要な不足情報を対話形式（プロンプト）で補完できる機能を提供する。
@@ -40,9 +40,9 @@
 3. Iteration 3: ドキュメント更新と最終レビュー（T5）
 
 ## Agreement
-- 合意日: (未定)
-- 合意内容: (未定)
-- 合意者: (未定)
+- 合意日: 2026-03-09
+- 合意内容: T1〜T5のタスクおよび進め方について合意。
+- 合意者: せんぱい (ユーザー), Gemini (AI)
 
 ## Execution Log
 - (empty)
