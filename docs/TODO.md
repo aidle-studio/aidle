@@ -76,7 +76,7 @@
 - `AGENTS.md` 正本 + アダプタ補助の運用が仕様・テストで担保される。
 
 **TODO**
-- [ ] MS6プランに合意する（`docs/plans/2026-03-09_MS6.md`）
+- [x] MS6プランに合意する（`docs/plans/2026-03-09_MS6.md`）
 - [ ] `.github/copilot-instructions.md` と `.github/instructions/*.instructions.md` の生成テンプレートを追加する
 - [ ] `GEMINI.md` / `CLAUDE.md` の互換アダプタ生成を追加する
 - [ ] 生成ON/OFFのCLIオプションと設定キーを追加する
