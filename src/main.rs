@@ -7,39 +7,15 @@ use std::io::Write;
 use std::path::{Path, PathBuf};
 use std::process::ExitCode;
 
-const REQUIRED_FILES: [(&str, &str); 8] = [
-    (
-        "AGENTS.md",
-        "# AGENTS.md\n\n仕様検討は合意後に実装へ進みます。\n",
-    ),
-    (
-        "README.md",
-        "# README.md\n\n`aidle init` でAIDD向け初期構成を生成します。\n",
-    ),
-    (
-        "docs/AGENT_CONTEXT.md",
-        "# AGENT_CONTEXT.md\n\n## 現在フェーズ\n- 実装フェーズ\n",
-    ),
-    (
-        "docs/RULES.md",
-        "# RULES.md\n\n## TDDサイクル\n- Red -> Green -> Refactor\n\n## Definition of Done\n- 対応テストがGreenであること\n",
-    ),
-    (
-        "docs/SPEC.md",
-        "# SPEC.md\n\n## 1. 目的\n`aidle` はAIDDの初期セットアップを支援するCLIです。\n",
-    ),
-    (
-        "docs/TODO.md",
-        "# TODO.md\n\n## 合意ゲート\n- 提案 -> 合意 -> 反映\n",
-    ),
-    (
-        "docs/TEST_PLAN.md",
-        "# TEST_PLAN.md\n\n## トレーサビリティ\n- AC-* -> TC-*\n",
-    ),
-    (
-        "docs/KNOWLEDGE.md",
-        "# KNOWLEDGE.md\n\n## ADR\n- 設計判断を記録\n",
-    ),
+const DEFAULT_TEMPLATE_FILES: [&str; 8] = [
+    "AGENTS.md",
+    "README.md",
+    "docs/AGENT_CONTEXT.md",
+    "docs/RULES.md",
+    "docs/SPEC.md",
+    "docs/TODO.md",
+    "docs/TEST_PLAN.md",
+    "docs/KNOWLEDGE.md",
 ];
 
 #[derive(Default)]
@@ -48,6 +24,12 @@ struct RunStats {
     updated: usize,
     skipped: usize,
     errors: usize,
+}
+
+#[derive(Debug)]
+struct TemplateFile {
+    rel_path: String,
+    content: String,
 }
 
 #[derive(Debug)]
@@ -191,7 +173,8 @@ fn run() -> Result<(), (u8, String)> {
         json: json_output,
     };
 
-    let stats = create_required_files(&root, dry_run, force)?;
+    let template_files = load_template_files(&options.template)?;
+    let stats = create_required_files(&root, &template_files, dry_run, force)?;
     print_summary(&stats, &options, &root);
     Ok(())
 }
@@ -323,6 +306,41 @@ fn io_error(context: &str, e: &std::io::Error) -> (u8, String) {
     )
 }
 
+fn template_error(cause: String, action: &str) -> (u8, String) {
+    (
+        3,
+        format!("テンプレート読み込みエラー: {cause}\n対処: {action}"),
+    )
+}
+
+fn template_base_dir() -> PathBuf {
+    if let Ok(custom) = env::var("AIDLE_TEMPLATE_ROOT") {
+        return PathBuf::from(custom);
+    }
+    PathBuf::from(env!("CARGO_MANIFEST_DIR")).join("templates")
+}
+
+fn load_template_files(template_name: &str) -> Result<Vec<TemplateFile>, (u8, String)> {
+    let template_dir = template_base_dir().join(template_name);
+    let mut files = Vec::with_capacity(DEFAULT_TEMPLATE_FILES.len());
+
+    for rel in DEFAULT_TEMPLATE_FILES {
+        let path = template_dir.join(rel);
+        let content = fs::read_to_string(&path).map_err(|e| {
+            template_error(
+                format!("{} の読み込みに失敗しました: {e}", path.display()),
+                "テンプレート配置とファイル権限を確認してください。",
+            )
+        })?;
+        files.push(TemplateFile {
+            rel_path: rel.to_string(),
+            content,
+        });
+    }
+
+    Ok(files)
+}
+
 fn rollback_state(created_files: &[PathBuf], overwritten_files: &[(PathBuf, Vec<u8>)]) {
     for path in created_files.iter().rev() {
         let _ = fs::remove_file(path);
@@ -379,7 +397,12 @@ fn print_summary(stats: &RunStats, options: &RunOptions, root: &Path) {
     );
 }
 
-fn create_required_files(root: &Path, dry_run: bool, force: bool) -> Result<RunStats, (u8, String)> {
+fn create_required_files(
+    root: &Path,
+    template_files: &[TemplateFile],
+    dry_run: bool,
+    force: bool,
+) -> Result<RunStats, (u8, String)> {
     let mut stats = RunStats::default();
 
     if dry_run {
@@ -391,8 +414,8 @@ fn create_required_files(root: &Path, dry_run: bool, force: bool) -> Result<RunS
     let mut created_files: Vec<PathBuf> = Vec::new();
     let mut overwritten_files: Vec<(PathBuf, Vec<u8>)> = Vec::new();
 
-    for (rel, contents) in REQUIRED_FILES {
-        let path = root.join(rel);
+    for tf in template_files {
+        let path = root.join(&tf.rel_path);
         if let Some(parent) = path.parent() {
             if let Err(e) = fs::create_dir_all(parent) {
                 let err = io_error(
@@ -446,7 +469,7 @@ fn create_required_files(root: &Path, dry_run: bool, force: bool) -> Result<RunS
             }
         };
 
-        if let Err(e) = file.write_all(contents.as_bytes()) {
+        if let Err(e) = file.write_all(tf.content.as_bytes()) {
             let err = io_error(&format!("ファイル書き込み ({})", path.display()), &e);
             rollback_state(&created_files, &overwritten_files);
             return Err(err);
