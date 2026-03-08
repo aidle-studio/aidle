@@ -5,7 +5,7 @@
 - Milestone Name: 残りのテンプレート（TODO, KNOWLEDGE, AGENT_CONTEXT, README）の汎用化
 - Date: 2026-03-09
 - Owner: Gemini (AI)
-- Status: Agreed
+- Status: Done
 
 ## Goal
 - `templates/default/docs/TODO.md`、`templates/default/docs/KNOWLEDGE.md`、`templates/default/docs/AGENT_CONTEXT.md`、および `templates/default/README.md` を、特定のプロジェクトに依存しない汎用的な初期状態として完成させる。
@@ -21,15 +21,15 @@
   - 実装コードの変更
 
 ## Tasks
-- [ ] T1: `templates/default/docs/TODO.md` の作成
+- [x] T1: `templates/default/docs/TODO.md` の作成
   - タスクのステータス管理（未着手、進行中、完了）と、マイルストーン単位での目標設定のフォーマットを定義する。
-- [ ] T2: `templates/default/docs/KNOWLEDGE.md` の作成
+- [x] T2: `templates/default/docs/KNOWLEDGE.md` の作成
   - Architecture Decision Record (ADR) のフォーマット（Context, Decision, Consequences）を定義する。
-- [ ] T3: `templates/default/docs/AGENT_CONTEXT.md` の作成
+- [x] T3: `templates/default/docs/AGENT_CONTEXT.md` の作成
   - AIが常に最新の状態を把握するための「現在フェーズ」と「直近のゴール・次アクション」をプレースホルダーとして定義する。
-- [ ] T4: `templates/default/README.md` の作成
+- [x] T4: `templates/default/README.md` の作成
   - プロジェクトの顔として、タイトル、概要、セットアップ手順、主要なコマンドを記述するプレースホルダーを定義する。
-- [ ] T5: せんぱいのレビューと合意形成
+- [x] T5: せんぱいのレビューと合意形成
 
 ## Iteration Plan
 1. Iteration 1: 各ファイルの汎用フォーマット作成（T1, T2, T3, T4）
