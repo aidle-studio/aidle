@@ -29,6 +29,9 @@
 ### `[adapters]`
 - `enabled` (bool, optional, default=`false`): GC-2適応レイヤの生成有効化。
 
+### `[stats]`
+- `output` (string, optional): 実行統計JSONの保存先ファイルパス。
+
 ## 4. 優先順位
 1. CLI引数/オプション
 2. `aidle.toml`
@@ -55,4 +58,7 @@ json = true
 
 [adapters]
 enabled = true
+
+[stats]
+output = "logs/aidle-stats.json"
 ```

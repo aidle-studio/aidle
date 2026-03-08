@@ -6,6 +6,7 @@ use std::io::IsTerminal;
 use std::io::Write;
 use std::path::{Path, PathBuf};
 use std::process::ExitCode;
+use std::time::Instant;
 
 const DEFAULT_TEMPLATE_FILES: [&str; 8] = [
     "AGENTS.md",
@@ -46,6 +47,7 @@ struct RunOptions {
     verbose: bool,
     json: bool,
     with_adapters: bool,
+    stats_out: Option<PathBuf>,
 }
 
 #[derive(Debug, Default)]
@@ -58,6 +60,7 @@ struct CliOptions {
     verbose: bool,
     json: bool,
     with_adapters: bool,
+    stats_out: Option<PathBuf>,
     template: Option<String>,
     agent_format: Option<String>,
 }
@@ -69,6 +72,7 @@ struct AidleConfig {
     agent: Option<AgentConfig>,
     execution: Option<ExecutionConfig>,
     adapters: Option<AdaptersConfig>,
+    stats: Option<StatsConfig>,
 }
 
 #[derive(Debug, Default, Deserialize)]
@@ -101,6 +105,11 @@ struct AdaptersConfig {
     enabled: Option<bool>,
 }
 
+#[derive(Debug, Default, Deserialize)]
+struct StatsConfig {
+    output: Option<String>,
+}
+
 fn main() -> ExitCode {
     match run() {
         Ok(()) => ExitCode::SUCCESS,
@@ -112,6 +121,7 @@ fn main() -> ExitCode {
 }
 
 fn run() -> Result<(), (u8, String)> {
+    let started_at = Instant::now();
     let cwd = env::current_dir().map_err(|e| io_error("カレントディレクトリ取得", &e))?;
     let config = load_config(&cwd)?;
 
@@ -162,6 +172,10 @@ fn run() -> Result<(), (u8, String)> {
             .as_ref()
             .and_then(|a| a.enabled)
             .unwrap_or(false);
+    let stats_out = cli
+        .stats_out
+        .clone()
+        .or_else(|| config.stats.as_ref().and_then(|s| s.output.clone().map(PathBuf::from)));
 
     let template = cli
         .template
@@ -192,10 +206,13 @@ fn run() -> Result<(), (u8, String)> {
         verbose,
         json: json_output,
         with_adapters,
+        stats_out,
     };
 
     let template_files = load_template_files(&options.template, options.with_adapters)?;
     let stats = create_required_files(&root, &template_files, dry_run, force)?;
+    let duration_ms = started_at.elapsed().as_millis();
+    write_stats_log(&options, &stats, &root, duration_ms)?;
     print_summary(&stats, &options, &root);
     Ok(())
 }
@@ -216,6 +233,15 @@ fn parse_cli_options(args: impl Iterator<Item = String>) -> Result<CliOptions, (
             "--verbose" => cli.verbose = true,
             "--json" => cli.json = true,
             "--with-adapters" => cli.with_adapters = true,
+            "--stats-out" => {
+                let value = it.next().ok_or_else(|| {
+                    arg_error(
+                        "`--stats-out` の値が不足しています。".to_string(),
+                        "`--stats-out <path>` の形式で指定してください。",
+                    )
+                })?;
+                cli.stats_out = Some(PathBuf::from(value));
+            }
             "--output" => {
                 let value = it.next().ok_or_else(|| {
                     arg_error(
@@ -246,7 +272,7 @@ fn parse_cli_options(args: impl Iterator<Item = String>) -> Result<CliOptions, (
             _ if arg.starts_with('-') => {
                 return Err(arg_error(
                     format!("未対応オプション `{arg}` です。"),
-                    "`aidle init [dir] [--output <path>] [--dry-run] [--force] [--non-interactive] [--verbose] [--json] [--with-adapters] [--template <name>] [--agent-format <name>]` を使用してください。",
+                    "`aidle init [dir] [--output <path>] [--dry-run] [--force] [--non-interactive] [--verbose] [--json] [--with-adapters] [--stats-out <path>] [--template <name>] [--agent-format <name>]` を使用してください。",
                 ));
             }
             _ => {
@@ -392,6 +418,49 @@ struct JsonSummary<'a> {
     root: String,
 }
 
+#[derive(Serialize)]
+struct StatsLog<'a> {
+    duration_ms: u128,
+    created: usize,
+    updated: usize,
+    skipped: usize,
+    errors: usize,
+    root: String,
+    template: &'a str,
+    agent_format: &'a str,
+    with_adapters: bool,
+}
+
+fn write_stats_log(
+    options: &RunOptions,
+    stats: &RunStats,
+    root: &Path,
+    duration_ms: u128,
+) -> Result<(), (u8, String)> {
+    let Some(path) = options.stats_out.as_ref() else {
+        return Ok(());
+    };
+
+    if let Some(parent) = path.parent() {
+        fs::create_dir_all(parent).map_err(|e| io_error("統計ログ用ディレクトリ作成", &e))?;
+    }
+
+    let payload = StatsLog {
+        duration_ms,
+        created: stats.created,
+        updated: stats.updated,
+        skipped: stats.skipped,
+        errors: stats.errors,
+        root: root.display().to_string(),
+        template: &options.template,
+        agent_format: &options.agent_format,
+        with_adapters: options.with_adapters,
+    };
+    let data = serde_json::to_string_pretty(&payload)
+        .map_err(|e| (4, format!("内部エラー: 統計ログJSONのシリアライズに失敗しました: {e}")))?;
+    fs::write(path, data).map_err(|e| io_error("統計ログ保存", &e))
+}
+
 fn print_summary(stats: &RunStats, options: &RunOptions, root: &Path) {
     if options.verbose {
         eprintln!(
@@ -402,6 +471,9 @@ fn print_summary(stats: &RunStats, options: &RunOptions, root: &Path) {
             options.non_interactive
         );
         eprintln!("[verbose] with_adapters={}", options.with_adapters);
+        if let Some(stats_out) = options.stats_out.as_ref() {
+            eprintln!("[verbose] stats_out={}", stats_out.display());
+        }
     }
 
     if options.json {
