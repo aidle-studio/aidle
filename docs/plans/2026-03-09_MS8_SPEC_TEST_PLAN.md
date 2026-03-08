@@ -5,7 +5,7 @@
 - Milestone Name: `SPEC.md` と `TEST_PLAN.md` テンプレートの汎用化
 - Date: 2026-03-09
 - Owner: Gemini (AI)
-- Status: Agreed
+- Status: Done
 
 ## Goal
 - `templates/default/docs/SPEC.md` と `templates/default/docs/TEST_PLAN.md` を、仕様駆動開発（SDD）およびテスト駆動開発（TDD）のトレーサビリティ（AC-* -> TC-*）を担保するための汎用フォーマットとして完成させる。
@@ -19,11 +19,11 @@
   - 他のテンプレートの修正
 
 ## Tasks
-- [ ] T1: `templates/default/docs/SPEC.md` の作成
+- [x] T1: `templates/default/docs/SPEC.md` の作成
   - プロジェクトの目的、対象ユーザー、スコープ（In/Out）、機能要件（要求: `REQ-*` と 受け入れ基準: `AC-*`）を記述するための構造を定義する。
-- [ ] T2: `templates/default/docs/TEST_PLAN.md` の作成
+- [x] T2: `templates/default/docs/TEST_PLAN.md` の作成
   - 仕様（`AC-*`）とテストケース（`TC-*`）の紐付け（トレーサビリティ）を管理する表、およびRed/Greenの状態を管理するフォーマットを定義する。
-- [ ] T3: せんぱいのレビューと合意形成
+- [x] T3: せんぱいのレビューと合意形成
 
 ## Iteration Plan
 1. Iteration 1: `SPEC.md` と `TEST_PLAN.md` の汎用フォーマット作成（T1, T2）
