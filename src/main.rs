@@ -1,3 +1,4 @@
+use serde::Deserialize;
 use std::env;
 use std::fs::{self, OpenOptions};
 use std::io::Write;
@@ -47,6 +48,24 @@ struct RunStats {
     errors: usize,
 }
 
+#[derive(Debug, Default, Deserialize)]
+struct AidleConfig {
+    project: Option<ProjectConfig>,
+    execution: Option<ExecutionConfig>,
+}
+
+#[derive(Debug, Default, Deserialize)]
+struct ProjectConfig {
+    name: Option<String>,
+    output: Option<String>,
+}
+
+#[derive(Debug, Default, Deserialize)]
+struct ExecutionConfig {
+    force: Option<bool>,
+    dry_run: Option<bool>,
+}
+
 fn main() -> ExitCode {
     match run() {
         Ok(()) => ExitCode::SUCCESS,
@@ -58,6 +77,9 @@ fn main() -> ExitCode {
 }
 
 fn run() -> Result<(), (u8, String)> {
+    let cwd = env::current_dir().map_err(|e| io_error("カレントディレクトリ取得", &e))?;
+    let config = load_config(&cwd)?;
+
     let mut args = env::args().skip(1);
     let command = args.next().ok_or_else(|| {
         (
@@ -75,17 +97,17 @@ fn run() -> Result<(), (u8, String)> {
         ));
     }
 
-    let mut dry_run = false;
-    let mut force = false;
+    let mut cli_dry_run = false;
+    let mut cli_force = false;
     let mut dir: Option<PathBuf> = None;
 
     for arg in args {
         if arg == "--dry-run" {
-            dry_run = true;
+            cli_dry_run = true;
             continue;
         }
         if arg == "--force" {
-            force = true;
+            cli_force = true;
             continue;
         }
 
@@ -111,12 +133,55 @@ fn run() -> Result<(), (u8, String)> {
 
     let root = match dir {
         Some(path) => path,
-        None => env::current_dir().map_err(|e| io_error("カレントディレクトリ取得", &e))?,
+        None => resolve_root(&cwd, &config),
     };
+    let force = cli_force || config.execution.as_ref().and_then(|e| e.force).unwrap_or(false);
+    let dry_run =
+        cli_dry_run || config.execution.as_ref().and_then(|e| e.dry_run).unwrap_or(false);
 
     let stats = create_required_files(&root, dry_run, force)?;
     print_summary(&stats);
     Ok(())
+}
+
+fn load_config(cwd: &Path) -> Result<AidleConfig, (u8, String)> {
+    let path = cwd.join("aidle.toml");
+    if !path.exists() {
+        return Ok(AidleConfig::default());
+    }
+
+    let text = fs::read_to_string(&path).map_err(|e| {
+        (
+            2,
+            format!(
+                "設定エラー: `aidle.toml` の読み込みに失敗しました: {e}\n対処: ファイル権限と内容を確認してください。"
+            ),
+        )
+    })?;
+
+    toml::from_str::<AidleConfig>(&text).map_err(|e| {
+        (
+            2,
+            format!(
+                "設定エラー: `aidle.toml` のパースに失敗しました: {e}\n対処: TOML構文とキー名を確認してください。"
+            ),
+        )
+    })
+}
+
+fn resolve_root(cwd: &Path, config: &AidleConfig) -> PathBuf {
+    let from_config = config
+        .project
+        .as_ref()
+        .and_then(|p| p.output.as_ref().or(p.name.as_ref()));
+
+    match from_config {
+        Some(path) => {
+            let p = PathBuf::from(path);
+            if p.is_absolute() { p } else { cwd.join(p) }
+        }
+        None => cwd.to_path_buf(),
+    }
 }
 
 fn io_error(context: &str, e: &std::io::Error) -> (u8, String) {
