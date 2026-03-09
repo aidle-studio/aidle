@@ -129,7 +129,8 @@ fn run() -> Result<(), (u8, String)> {
     let command = args.next().ok_or_else(|| {
         (
             2,
-            "引数エラー: サブコマンドが必要です。対処: `aidle init [dir]` を指定してください。".to_string(),
+            "引数エラー: サブコマンドが必要です。対処: `aidle init [dir]` を指定してください。"
+                .to_string(),
         )
     })?;
 
@@ -144,8 +145,18 @@ fn run() -> Result<(), (u8, String)> {
 
     let cli = parse_cli_options(args)?;
 
-    let force = cli.force || config.execution.as_ref().and_then(|e| e.force).unwrap_or(false);
-    let dry_run = cli.dry_run || config.execution.as_ref().and_then(|e| e.dry_run).unwrap_or(false);
+    let force = cli.force
+        || config
+            .execution
+            .as_ref()
+            .and_then(|e| e.force)
+            .unwrap_or(false);
+    let dry_run = cli.dry_run
+        || config
+            .execution
+            .as_ref()
+            .and_then(|e| e.dry_run)
+            .unwrap_or(false);
     let non_interactive = cli.non_interactive
         || config
             .execution
@@ -171,10 +182,12 @@ fn run() -> Result<(), (u8, String)> {
             .as_ref()
             .and_then(|a| a.enabled)
             .unwrap_or(false);
-    let stats_out = cli
-        .stats_out
-        .clone()
-        .or_else(|| config.stats.as_ref().and_then(|s| s.output.clone().map(PathBuf::from)));
+    let stats_out = cli.stats_out.clone().or_else(|| {
+        config
+            .stats
+            .as_ref()
+            .and_then(|s| s.output.clone().map(PathBuf::from))
+    });
     let mut interactive_project_name: Option<String> = None;
 
     let default_project_name = cwd
@@ -183,7 +196,7 @@ fn run() -> Result<(), (u8, String)> {
         .unwrap_or_default();
 
     if !non_interactive {
-        use dialoguer::{theme::ColorfulTheme, Confirm, Input};
+        use dialoguer::{Confirm, Input, theme::ColorfulTheme};
 
         if let Ok(input) = Input::<String>::with_theme(&ColorfulTheme::default())
             .with_prompt("Project Name")
@@ -196,14 +209,14 @@ fn run() -> Result<(), (u8, String)> {
             }
         }
 
-        if !cli.with_adapters && config.adapters.as_ref().and_then(|a| a.enabled).is_none() {
-            if let Ok(enable) = Confirm::with_theme(&ColorfulTheme::default())
+        if !cli.with_adapters
+            && config.adapters.as_ref().and_then(|a| a.enabled).is_none()
+            && let Ok(enable) = Confirm::with_theme(&ColorfulTheme::default())
                 .with_prompt("Generate AI Adapters?")
                 .default(false)
                 .interact()
-            {
-                with_adapters = enable;
-            }
+        {
+            with_adapters = enable;
         }
     }
 
@@ -231,10 +244,10 @@ fn run() -> Result<(), (u8, String)> {
         .template
         .or_else(|| config.template.as_ref().and_then(|t| t.name.clone()))
         .unwrap_or_else(|| "default".to_string());
-    if template != "default" {
+    if !matches!(template.as_str(), "default" | "rust-cli") {
         return Err(arg_error(
             format!("未対応テンプレート `{template}` です。"),
-            "サポート対象のテンプレート名を指定してください（現在は `default` のみ）。",
+            "サポート対象のテンプレート名を指定してください（現在は `default`, `rust-cli`）。",
         ));
     }
 
@@ -365,7 +378,11 @@ fn load_config(cwd: &Path) -> Result<AidleConfig, (u8, String)> {
     })
 }
 
-fn resolve_root(cwd: &Path, config: &AidleConfig, cli: &CliOptions) -> Result<PathBuf, (u8, String)> {
+fn resolve_root(
+    cwd: &Path,
+    config: &AidleConfig,
+    cli: &CliOptions,
+) -> Result<PathBuf, (u8, String)> {
     if cli.dir.is_some() && cli.output.is_some() {
         return Err(arg_error(
             "`dir` と `--output` の同時指定はできません。".to_string(),
@@ -506,8 +523,12 @@ fn write_stats_log(
         agent_format: &options.agent_format,
         with_adapters: options.with_adapters,
     };
-    let data = serde_json::to_string_pretty(&payload)
-        .map_err(|e| (4, format!("内部エラー: 統計ログJSONのシリアライズに失敗しました: {e}")))?;
+    let data = serde_json::to_string_pretty(&payload).map_err(|e| {
+        (
+            4,
+            format!("内部エラー: 統計ログJSONのシリアライズに失敗しました: {e}"),
+        )
+    })?;
     fs::write(path, data).map_err(|e| io_error("統計ログ保存", &e))
 }
 
@@ -570,15 +591,10 @@ fn create_required_files(
 
     for tf in template_files {
         let path = root.join(&tf.rel_path);
-        if let Some(parent) = path.parent() {
-            if let Err(e) = fs::create_dir_all(parent) {
-                let err = io_error(
-                    &format!("親ディレクトリ作成 ({})", parent.display()),
-                    &e,
-                );
-                rollback_state(&created_files, &overwritten_files);
-                return Err(err);
-            }
+        if let Some(parent) = path.parent() && let Err(e) = fs::create_dir_all(parent) {
+            let err = io_error(&format!("親ディレクトリ作成 ({})", parent.display()), &e);
+            rollback_state(&created_files, &overwritten_files);
+            return Err(err);
         }
 
         let mut file = if path.exists() {

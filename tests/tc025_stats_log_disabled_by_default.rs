@@ -18,4 +18,3 @@ fn tc025_stats_log_is_not_created_when_unspecified() {
         "stats file must not be created by default"
     );
 }
-

@@ -31,7 +31,7 @@ non_interactive = true
         root.join("AGENTS.md").exists(),
         "AGENTS.md must exist (default execution)"
     );
-    
+
     // AI Adapters should NOT be created because the prompt was skipped and the default is false.
     assert!(
         !root.join("CLAUDE.md").exists(),

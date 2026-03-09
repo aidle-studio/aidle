@@ -27,4 +27,3 @@ fn tc023_without_adapters_option_does_not_create_gc2_files() {
         );
     }
 }
-

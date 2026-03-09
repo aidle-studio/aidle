@@ -27,5 +27,8 @@ fn tc008_on_partial_failure_newly_created_files_are_rolled_back() {
         );
     }
 
-    assert!(blocking_file.is_file(), "pre-existing blocking file must remain");
+    assert!(
+        blocking_file.is_file(),
+        "pre-existing blocking file must remain"
+    );
 }

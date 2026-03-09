@@ -28,4 +28,3 @@ fn tc022_with_adapters_enabled_creates_gc2_files() {
         );
     }
 }
-

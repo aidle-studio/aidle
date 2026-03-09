@@ -78,4 +78,3 @@ fn tc021_verbose_flag_emits_debug_line_to_stderr() {
         "stderr must contain verbose line: {stderr}"
     );
 }
-

@@ -5,7 +5,7 @@
 - Milestone Name: 言語/フレームワークテンプレート選択
 - Date: 2026-03-09
 - Owner: Codex
-- Status: Agreed
+- Status: Done
 
 ## Goal
 - `aidle init` 実行時に、`default` 以外のテンプレートを選択して生成できるようにする。
@@ -23,11 +23,11 @@
 
 ## Tasks
 - [x] T1: テンプレート選択仕様（キー、互換性、デフォルト）を定義する
-- [ ] T2: `templates/rust-cli/` を追加する
-- [ ] T3: `--template rust-cli` と `template.name = \"rust-cli\"` を受理する
-- [ ] T4: 契約テスト（選択成功/未対応値失敗）を追加してGreen化する
-- [ ] T5: `docs/SPEC.md` / `docs/CONFIG.md` / `docs/TEST_PLAN.md` / `docs/TODO.md` を更新する
-- [ ] T6: 通し検証（`cargo nextest run`）を実施し、結果を記録する
+- [x] T2: `templates/rust-cli/` を追加する
+- [x] T3: `--template rust-cli` と `template.name = \"rust-cli\"` を受理する
+- [x] T4: 契約テスト（選択成功/未対応値失敗）を追加してGreen化する
+- [x] T5: `docs/SPEC.md` / `docs/CONFIG.md` / `docs/TEST_PLAN.md` / `docs/TODO.md` を更新する
+- [x] T6: 通し検証（`cargo nextest run`）を実施し、結果を記録する
 
 ## Iteration Plan
 1. Iteration 1: 仕様化（T1, T5の一部）
@@ -44,6 +44,10 @@
 ## Execution Log
 - 2026-03-09: MS10開始。Iteration 1 に着手。
 - 2026-03-09: Iteration 1 完了。仕様（AC/TC）を定義。
+- 2026-03-10: Iteration 2 完了。`templates/rust-cli/` テンプレートを追加。
+- 2026-03-10: Iteration 3 完了。`--template rust-cli` と `template.name=rust-cli` を受理。
+- 2026-03-10: Iteration 4 完了。`TC-028` / `TC-029` を追加しGreen化。
+- 2026-03-10: Iteration 5 完了。`cargo nextest run`（38 passed, 0 failed）で通し検証し、ドキュメント更新。
 
 ## Re-plan Notes
 - (empty)

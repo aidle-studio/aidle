@@ -9,8 +9,14 @@ fn tc020_missing_subcommand_returns_code_2() {
 
     assert_eq!(output.status.code(), Some(2), "exit code must be 2");
     let stderr = String::from_utf8_lossy(&output.stderr);
-    assert!(stderr.contains("引数エラー"), "stderr must contain error label: {stderr}");
-    assert!(stderr.contains("対処"), "stderr must contain action hint: {stderr}");
+    assert!(
+        stderr.contains("引数エラー"),
+        "stderr must contain error label: {stderr}"
+    );
+    assert!(
+        stderr.contains("対処"),
+        "stderr must contain action hint: {stderr}"
+    );
 }
 
 #[test]
@@ -34,7 +40,11 @@ fn tc020_missing_option_values_return_code_2() {
             .args(&args)
             .output()
             .expect("failed to execute aidle");
-        assert_eq!(output.status.code(), Some(2), "exit code must be 2 for {args:?}");
+        assert_eq!(
+            output.status.code(),
+            Some(2),
+            "exit code must be 2 for {args:?}"
+        );
     }
 }
 
@@ -64,4 +74,3 @@ fn tc020_dir_and_output_together_returns_code_2() {
 
     assert_eq!(output.status.code(), Some(2), "exit code must be 2");
 }
-

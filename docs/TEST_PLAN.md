@@ -57,8 +57,8 @@
 | TC-025 | AC-014 | integration | happy | 統計ログ未指定（既定）時は統計ファイルが生成されない | Green |
 | TC-026 | AC-008 | integration | happy | TTY接続時かつ対話モード有効時にプロンプトが表示され入力値が反映される | Green |
 | TC-027 | AC-008 | integration | logic | `execution.non_interactive=true` 設定時にプロンプトがスキップされる | Green |
-| TC-028 | AC-015 | integration | happy | `--template rust-cli` および `template.name=rust-cli` で `rust-cli` テンプレートが生成される | Red |
-| TC-029 | AC-016 | integration | error | サポート対象外テンプレート名は終了コード2と原因/対処で失敗する | Red |
+| TC-028 | AC-015 | integration | happy | `--template rust-cli` および `template.name=rust-cli` で `rust-cli` テンプレートが生成される | Green |
+| TC-029 | AC-016 | integration | error | サポート対象外テンプレート名は終了コード2と原因/対処で失敗する | Green |
 
 ## 4. 実装順序（推奨）
 1. `TC-001`, `TC-002`（基本生成）
@@ -78,7 +78,7 @@
 - 計測対象は `src/` 配下のRustコードとする。
 - 最低基準は行カバレッジ 80% とする。
 - 変更対象モジュールの差分カバレッジは 90% を原則必須（CIゲート）とする。
-- 必須フロー（`TC-001`〜`TC-027`）に対応する統合テストは、常に実行対象とする。
+- 必須フロー（`TC-001`〜`TC-029`）に対応する統合テストは、常に実行対象とする。
 - 差分カバレッジ未達を例外的に許容する場合、PRに未達理由、期限付き追補予定、合意記録を記載する。
 
 ## 7. テスト実行品質（タイムアウト）

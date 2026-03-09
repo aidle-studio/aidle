@@ -16,5 +16,8 @@ fn tc016_output_option_sets_generation_root() {
         .expect("failed to execute aidle");
 
     assert_eq!(output.status.code(), Some(0), "exit code must be 0");
-    assert!(out.join("AGENTS.md").exists(), "AGENTS.md must be created under --output path");
+    assert!(
+        out.join("AGENTS.md").exists(),
+        "AGENTS.md must be created under --output path"
+    );
 }

@@ -15,12 +15,15 @@ fn tc026_tty_interactive_mode_prompts_and_applies_input() {
     let mut p = spawn_command(cmd, Some(5000)).expect("failed to spawn command with pty");
 
     // Expect the first prompt for Project Name
-    p.exp_string("Project Name").expect("expected Project Name prompt");
+    p.exp_string("Project Name")
+        .expect("expected Project Name prompt");
     // Send input "MyAwesomeProject" followed by Enter (\r)
-    p.send_line("MyAwesomeProject").expect("failed to send project name");
+    p.send_line("MyAwesomeProject")
+        .expect("failed to send project name");
 
     // Expect the second prompt for AI Adapters
-    p.exp_string("Generate AI Adapters?").expect("expected AI Adapters prompt");
+    p.exp_string("Generate AI Adapters?")
+        .expect("expected AI Adapters prompt");
     // Send 'y' for yes
     p.send_line("y").expect("failed to send 'y'");
 
@@ -30,7 +33,7 @@ fn tc026_tty_interactive_mode_prompts_and_applies_input() {
     let project_root = root.join("MyAwesomeProject");
     let claude = project_root.join("CLAUDE.md");
 
-    // We expect that `--with-adapters` was effectively set to true 
+    // We expect that `--with-adapters` was effectively set to true
     // because we answered 'y' to the second prompt!
     assert!(
         claude.exists(),

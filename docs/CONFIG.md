@@ -14,7 +14,7 @@
 - `output` (string, optional): 出力先パス。CLI引数/オプションが優先される。
 
 ### `[template]`
-- `name` (string, optional, default=`"default"`): テンプレート名。
+- `name` (string, optional, default=`"default"`): テンプレート名（`default` / `rust-cli`）。
 
 ### `[agent]`
 - `format` (string, optional, default=`"agents-md"`): エージェント規約形式。
