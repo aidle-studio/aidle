@@ -12,11 +12,11 @@ fn tc006_argument_error_returns_code_2_and_shows_cause_and_action() {
 
     let stderr = String::from_utf8_lossy(&output.stderr);
     assert!(
-        stderr.contains("引数エラー"),
+        stderr.contains("Argument Error"),
         "stderr must contain cause label: {stderr}"
     );
     assert!(
-        stderr.contains("対処"),
+        stderr.contains("Action"),
         "stderr must contain action hint: {stderr}"
     );
 }

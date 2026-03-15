@@ -21,11 +21,11 @@ fn tc007_io_error_returns_code_3_and_shows_cause_and_action() {
 
     let stderr = String::from_utf8_lossy(&output.stderr);
     assert!(
-        stderr.contains("I/Oエラー"),
-        "stderr must contain cause label: {stderr}"
+        stderr.contains("I/O Error"),
+        "stderr must contain error label: {stderr}"
     );
     assert!(
-        stderr.contains("対処"),
+        stderr.contains("Action"),
         "stderr must contain action hint: {stderr}"
     );
 }

@@ -13,11 +13,11 @@ fn tc029_unsupported_template_fails_with_code_2_and_action_hint() {
 
     let stderr = String::from_utf8_lossy(&output.stderr);
     assert!(
-        stderr.contains("引数エラー"),
+        stderr.contains("Argument Error"),
         "stderr must contain cause label: {stderr}"
     );
     assert!(
-        stderr.contains("対処"),
+        stderr.contains("Action"),
         "stderr must contain action hint: {stderr}"
     );
 }
@@ -35,7 +35,7 @@ fn tc029_rust_cli_is_no_longer_supported() {
 
     let stderr = String::from_utf8_lossy(&output.stderr);
     assert!(
-        stderr.contains("未対応テンプレート `rust-cli` です。"),
+        stderr.contains("unsupported template `rust-cli`"),
         "stderr must contain cause: {stderr}"
     );
 }

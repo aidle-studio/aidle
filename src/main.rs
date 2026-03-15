@@ -134,32 +134,63 @@ fn main() -> ExitCode {
     match run() {
         Ok(()) => ExitCode::SUCCESS,
         Err((code, message)) => {
-            eprintln!("{message}");
+            if code != 0 {
+                eprintln!("{message}");
+            }
             ExitCode::from(code)
         }
     }
 }
 
+fn help_text() -> &'static str {
+    r#"aidle - AI-Driven Development (AIDD) Project Initializer
+
+Usage:
+    aidle <subcommand> [options]
+
+Subcommands:
+    init [dir]    Initialize a new project in [dir] or current directory.
+
+Options:
+    --output <path>         Set output root directory (cannot be used with [dir]).
+    --template <name>       Template name to use (default: "default").
+    --agent-format <name>   Agent convention format (default: "agents-md").
+    --with-adapters         Generate AI adapters (Copilot, Gemini, Claude).
+    --stats-out <path>      Save execution statistics to <path> in JSON format.
+    --dry-run               Display what would be done without making any changes.
+    --force                 Overwrite existing files.
+    --non-interactive       Disable interactive prompts.
+    --verbose               Show detailed logs.
+    --json                  Output result summary in JSON format.
+    -h, --help              Print help information.
+"#
+}
+
 fn run() -> Result<(), (u8, String)> {
     let started_at = Instant::now();
-    let cwd = env::current_dir().map_err(|e| io_error("カレントディレクトリ取得", &e))?;
+    let cwd = env::current_dir().map_err(|e| io_error("getting current directory", &e))?;
     let config = load_config(&cwd)?;
 
-    let mut args = env::args().skip(1);
-    let command = args.next().ok_or_else(|| {
-        (
-            2,
-            "引数エラー: サブコマンドが必要です。対処: `aidle init [dir]` を指定してください。"
-                .to_string(),
-        )
-    })?;
+    let mut args = env::args().skip(1).peekable();
+    let command = match args.next() {
+        Some(cmd) if cmd == "-h" || cmd == "--help" => {
+            println!("{}", help_text());
+            return Ok(());
+        }
+        Some(cmd) => cmd,
+        None => {
+            let msg = format!(
+                "Argument Error: subcommand is required\nAction: Specify a subcommand like `init`.\n\n{}",
+                help_text()
+            );
+            return Err((2, msg));
+        }
+    };
 
     if command != "init" {
-        return Err((
-            2,
-            format!(
-                "引数エラー: 未対応サブコマンド `{command}` です。対処: `aidle init [dir]` を使用してください。"
-            ),
+        return Err(arg_error(
+            format!("unsupported subcommand `{command}`"),
+            "Use `aidle init [dir]` to initialize a project.",
         ));
     }
 
@@ -266,8 +297,8 @@ fn run() -> Result<(), (u8, String)> {
         .unwrap_or_else(|| "default".to_string());
     if !matches!(template.as_str(), "default") {
         return Err(arg_error(
-            format!("未対応テンプレート `{template}` です。"),
-            "サポート対象のテンプレート名を指定してください（現在は `default`）。",
+            format!("unsupported template `{template}`"),
+            "Please specify a supported template name (currently 'default').",
         ));
     }
 
@@ -277,8 +308,8 @@ fn run() -> Result<(), (u8, String)> {
         .unwrap_or_else(|| "agents-md".to_string());
     if agent_format != "agents-md" {
         return Err(arg_error(
-            format!("未対応 agent-format `{agent_format}` です。"),
-            "サポート対象の agent-format を指定してください（現在は `agents-md` のみ）。",
+            format!("unsupported agent-format `{agent_format}`"),
+            "Please specify a supported agent-format (currently 'agents-md').",
         ));
     }
 
@@ -301,7 +332,7 @@ fn run() -> Result<(), (u8, String)> {
 }
 
 fn arg_error(cause: String, action: &str) -> (u8, String) {
-    (2, format!("引数エラー: {cause}\n対処: {action}"))
+    (2, format!("Argument Error: {cause}\nAction: {action}"))
 }
 
 fn parse_cli_options(args: impl Iterator<Item = String>) -> Result<CliOptions, (u8, String)> {
@@ -319,8 +350,8 @@ fn parse_cli_options(args: impl Iterator<Item = String>) -> Result<CliOptions, (
             "--stats-out" => {
                 let value = it.next().ok_or_else(|| {
                     arg_error(
-                        "`--stats-out` の値が不足しています。".to_string(),
-                        "`--stats-out <path>` の形式で指定してください。",
+                        "missing value for `--stats-out`".to_string(),
+                        "Specify as `--stats-out <path>`.",
                     )
                 })?;
                 cli.stats_out = Some(PathBuf::from(value));
@@ -328,8 +359,8 @@ fn parse_cli_options(args: impl Iterator<Item = String>) -> Result<CliOptions, (
             "--output" => {
                 let value = it.next().ok_or_else(|| {
                     arg_error(
-                        "`--output` の値が不足しています。".to_string(),
-                        "`--output <path>` の形式で指定してください。",
+                        "missing value for `--output`".to_string(),
+                        "Specify as `--output <path>`.",
                     )
                 })?;
                 cli.output = Some(PathBuf::from(value));
@@ -337,8 +368,8 @@ fn parse_cli_options(args: impl Iterator<Item = String>) -> Result<CliOptions, (
             "--template" => {
                 let value = it.next().ok_or_else(|| {
                     arg_error(
-                        "`--template` の値が不足しています。".to_string(),
-                        "`--template <name>` の形式で指定してください。",
+                        "missing value for `--template`".to_string(),
+                        "Specify as `--template <name>`.",
                     )
                 })?;
                 cli.template = Some(value);
@@ -346,23 +377,27 @@ fn parse_cli_options(args: impl Iterator<Item = String>) -> Result<CliOptions, (
             "--agent-format" => {
                 let value = it.next().ok_or_else(|| {
                     arg_error(
-                        "`--agent-format` の値が不足しています。".to_string(),
-                        "`--agent-format <name>` の形式で指定してください。",
+                        "missing value for `--agent-format`".to_string(),
+                        "Specify as `--agent-format <name>`.",
                     )
                 })?;
                 cli.agent_format = Some(value);
             }
+            "-h" | "--help" => {
+                println!("{}", help_text());
+                return Err((0, String::new()));
+            }
             _ if arg.starts_with('-') => {
                 return Err(arg_error(
-                    format!("未対応オプション `{arg}` です。"),
-                    "`aidle init [dir] [--output <path>] [--dry-run] [--force] [--non-interactive] [--verbose] [--json] [--with-adapters] [--stats-out <path>] [--template <name>] [--agent-format <name>]` を使用してください。",
+                    format!("unsupported option `{arg}`"),
+                    "Run `aidle --help` to see available options.",
                 ));
             }
             _ => {
                 if cli.dir.is_some() {
                     return Err(arg_error(
-                        "`init` に指定できるディレクトリは1つまでです。".to_string(),
-                        "`aidle init [dir]` の形式で実行してください。",
+                        "only one directory can be specified for `init`".to_string(),
+                        "Run as `aidle init [dir]`.",
                     ));
                 }
                 cli.dir = Some(PathBuf::from(arg));
@@ -383,7 +418,7 @@ fn load_config(cwd: &Path) -> Result<AidleConfig, (u8, String)> {
         (
             2,
             format!(
-                "設定エラー: `aidle.toml` の読み込みに失敗しました: {e}\n対処: ファイル権限と内容を確認してください。"
+                "Config Error: failed to read `aidle.toml`: {e}\nAction: Check file permissions and content."
             ),
         )
     })?;
@@ -392,7 +427,7 @@ fn load_config(cwd: &Path) -> Result<AidleConfig, (u8, String)> {
         (
             2,
             format!(
-                "設定エラー: `aidle.toml` のパースに失敗しました: {e}\n対処: TOML構文とキー名を確認してください。"
+                "Config Error: failed to parse `aidle.toml`: {e}\nAction: Check TOML syntax and key names."
             ),
         )
     })
@@ -405,8 +440,8 @@ fn resolve_root(
 ) -> Result<PathBuf, (u8, String)> {
     if cli.dir.is_some() && cli.output.is_some() {
         return Err(arg_error(
-            "`dir` と `--output` の同時指定はできません。".to_string(),
-            "どちらか一方のみ指定してください。",
+            "cannot specify both `dir` and `--output`".to_string(),
+            "Please specify only one of them.",
         ));
     }
 
@@ -436,7 +471,7 @@ fn io_error(context: &str, e: &std::io::Error) -> (u8, String) {
     (
         3,
         format!(
-            "I/Oエラー: {context} に失敗しました: {e}\n対処: パスの妥当性とアクセス権限を確認してください。"
+            "I/O Error: failed to {context}: {e}\nAction: Check path validity and access permissions."
         ),
     )
 }
@@ -444,7 +479,7 @@ fn io_error(context: &str, e: &std::io::Error) -> (u8, String) {
 fn template_error(cause: String, action: &str) -> (u8, String) {
     (
         3,
-        format!("テンプレート読み込みエラー: {cause}\n対処: {action}"),
+        format!("Template Load Error: {cause}\nAction: {action}"),
     )
 }
 
@@ -470,8 +505,8 @@ fn load_template_files(
         let path = template_dir.join(rel);
         let content = fs::read_to_string(&path).map_err(|e| {
             template_error(
-                format!("{} の読み込みに失敗しました: {e}", path.display()),
-                "テンプレート配置とファイル権限を確認してください。",
+                format!("failed to read {}: {e}", path.display()),
+                "Check template placement and file permissions.",
             )
         })?;
         files.push(TemplateFile {
@@ -529,7 +564,7 @@ fn write_stats_log(
     };
 
     if let Some(parent) = path.parent() {
-        fs::create_dir_all(parent).map_err(|e| io_error("統計ログ用ディレクトリ作成", &e))?;
+        fs::create_dir_all(parent).map_err(|e| io_error("creating stats log directory", &e))?;
     }
 
     let payload = StatsLog {
@@ -546,10 +581,10 @@ fn write_stats_log(
     let data = serde_json::to_string_pretty(&payload).map_err(|e| {
         (
             4,
-            format!("内部エラー: 統計ログJSONのシリアライズに失敗しました: {e}"),
+            format!("Internal Error: failed to serialize stats log JSON: {e}"),
         )
     })?;
-    fs::write(path, data).map_err(|e| io_error("統計ログ保存", &e))
+    fs::write(path, data).map_err(|e| io_error("saving stats log", &e))
 }
 
 fn print_summary(stats: &RunStats, options: &RunOptions, root: &Path) {
@@ -604,7 +639,7 @@ fn create_required_files(
         return Ok(stats);
     }
 
-    fs::create_dir_all(root).map_err(|e| io_error("出力ディレクトリ作成", &e))?;
+    fs::create_dir_all(root).map_err(|e| io_error("creating output directory", &e))?;
 
     let mut created_files: Vec<PathBuf> = Vec::new();
     let mut overwritten_files: Vec<(PathBuf, Vec<u8>)> = Vec::new();
@@ -614,7 +649,7 @@ fn create_required_files(
         if let Some(parent) = path.parent()
             && let Err(e) = fs::create_dir_all(parent)
         {
-            let err = io_error(&format!("親ディレクトリ作成 ({})", parent.display()), &e);
+            let err = io_error(&format!("creating parent directory ({})", parent.display()), &e);
             rollback_state(&created_files, &overwritten_files);
             return Err(err);
         }
@@ -628,7 +663,7 @@ fn create_required_files(
             let original = match fs::read(&path) {
                 Ok(bytes) => bytes,
                 Err(e) => {
-                    let err = io_error(&format!("既存ファイル読み込み ({})", path.display()), &e);
+                    let err = io_error(&format!("reading existing file ({})", path.display()), &e);
                     rollback_state(&created_files, &overwritten_files);
                     return Err(err);
                 }
@@ -641,7 +676,7 @@ fn create_required_files(
                     f
                 }
                 Err(e) => {
-                    let err = io_error(&format!("ファイル上書き ({})", path.display()), &e);
+                    let err = io_error(&format!("overwriting file ({})", path.display()), &e);
                     rollback_state(&created_files, &overwritten_files);
                     return Err(err);
                 }
@@ -654,7 +689,7 @@ fn create_required_files(
                     f
                 }
                 Err(e) => {
-                    let err = io_error(&format!("ファイル作成 ({})", path.display()), &e);
+                    let err = io_error(&format!("creating file ({})", path.display()), &e);
                     rollback_state(&created_files, &overwritten_files);
                     return Err(err);
                 }
@@ -662,7 +697,7 @@ fn create_required_files(
         };
 
         if let Err(e) = file.write_all(tf.content.as_bytes()) {
-            let err = io_error(&format!("ファイル書き込み ({})", path.display()), &e);
+            let err = io_error(&format!("writing to file ({})", path.display()), &e);
             rollback_state(&created_files, &overwritten_files);
             return Err(err);
         }

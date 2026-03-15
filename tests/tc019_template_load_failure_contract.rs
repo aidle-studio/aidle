@@ -14,11 +14,11 @@ fn tc019_template_load_failure_returns_code_3_with_cause_and_action() {
 
     let stderr = String::from_utf8_lossy(&output.stderr);
     assert!(
-        stderr.contains("テンプレート読み込みエラー"),
+        stderr.contains("Template Load Error"),
         "stderr must contain cause label: {stderr}"
     );
     assert!(
-        stderr.contains("対処"),
+        stderr.contains("Action"),
         "stderr must contain action hint: {stderr}"
     );
 }

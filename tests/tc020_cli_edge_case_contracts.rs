@@ -10,11 +10,11 @@ fn tc020_missing_subcommand_returns_code_2() {
     assert_eq!(output.status.code(), Some(2), "exit code must be 2");
     let stderr = String::from_utf8_lossy(&output.stderr);
     assert!(
-        stderr.contains("引数エラー"),
+        stderr.contains("Argument Error"),
         "stderr must contain error label: {stderr}"
     );
     assert!(
-        stderr.contains("対処"),
+        stderr.contains("Action"),
         "stderr must contain action hint: {stderr}"
     );
 }
