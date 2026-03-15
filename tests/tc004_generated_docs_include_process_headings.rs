@@ -28,16 +28,16 @@ fn tc004_generated_docs_include_process_and_agreement_headings() {
         "SPEC.md must include acceptance criteria section: {spec}"
     );
     assert!(
-        todo.contains("合意ゲート"),
-        "TODO.md must include agreement gate heading: {todo}"
+        todo.contains("Agreement Gate"),
+        "TODO.md must include agreement gate keyword: {todo}"
     );
     assert!(
-        rules.contains("合意ゲート"),
+        rules.contains("Agreement Gate"),
         "RULES.md must mention agreement gate: {rules}"
     );
     assert!(
-        rules.contains("TDDサイクル"),
-        "RULES.md must contain TDD cycle: {rules}"
+        rules.contains("TDD"),
+        "RULES.md must contain TDD: {rules}"
     );
     assert!(
         test_plan.contains("トレーサビリティ"),

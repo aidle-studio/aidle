@@ -15,6 +15,7 @@ fn tc001_init_creates_gc1_required_files_in_current_directory() {
 
     let required = [
         "AGENTS.md",
+        "ARCHITECTURE.md",
         "README.md",
         "docs/AGENT_CONTEXT.md",
         "docs/RULES.md",
@@ -22,6 +23,19 @@ fn tc001_init_creates_gc1_required_files_in_current_directory() {
         "docs/TODO.md",
         "docs/TEST_PLAN.md",
         "docs/KNOWLEDGE.md",
+        "docs/HARNESS.md",
+        "docs/QUALITY_SCORE.md",
+        "docs/RELIABILITY.md",
+        "docs/SECURITY.md",
+        "docs/PRODUCT_SENSE.md",
+        "docs/DESIGN.md",
+        "docs/PLANS.md",
+        "docs/adr/index.md",
+        "docs/design-docs/index.md",
+        "docs/exec-plans/active/.gitkeep",
+        "docs/product-specs/index.md",
+        "docs/references/index.md",
+        "scripts/check_harness.sh",
     ];
 
     for rel in required {

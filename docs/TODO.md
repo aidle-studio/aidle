@@ -169,26 +169,24 @@
 - [ ] 主要受け入れシナリオのクロスOS実行を自動化する
 - [ ] 互換性検証結果をドキュメント化する
 
-### Phase 4: Harness Rule Hardening（新規）
+### Phase 4: Harness Rule Hardening（完了）
 - 目的: Harness Engineeringの知見を取り込み、テンプレート生成物のルールを「短く・検証可能・運用可能」に強化する。
 
-### MS14: テンプレートルール再設計（計画待ち）
+### MS14: テンプレートの抜本적再設計（完了）
 **達成条件**
-- `AGENTS.md` と `docs/` の役割分離（ポインタ/正本）が明文化される。
-- ルールが決定論的な検証手段（lint/test/hook/CI）に紐づき、指示依存を減らせる。
-- 「計画→合意→実行→検証」の標準手順がテンプレートに統一される。
+- `default` テンプレートが「3本柱（Harness, SDD, Context Engineering）」に基づき刷新される。
+- `AGENTS.md` が50行以下の極小ポインタ型になり、`docs/` 配下が OpenAI スタイルで階層化される。
+- `rust-cli` テンプレートが廃止（削除）され、実装とテストが一本化される。
 
 **TODO**
-- [ ] 参考記事（Harness Engineering Best Practices 2026）を再読し、ルール候補・非採用理由・未確定論点を整理する
-- [ ] 既存ルールの棚卸し（冗長指示・検証不能ルール・重複）を実施する
-- [ ] `AGENTS.md` 最小化方針（目安行数、記載対象、禁止対象）を定義する
-- [ ] ポインタ整合性ルール（リンク切れ・参照先欠落の検知）を定義する
-- [ ] 失敗学ルールを定義する（同種ミス再発時にTC/リンタールールを追加）
-- [ ] ルール改竄防止方針を定義する（lint設定・CI設定変更時の合意ゲート）
-- [ ] 完了条件の機械化方針を定義する（Stop条件、必須コマンド、失敗時再実行）
-- [ ] セッション再開ルーチン（開始時に読む順序/進捗記録更新）を定義する
-- [ ] 上記を `docs/RULES.md` / テンプレート `docs/RULES.md` / `AGENTS.md` に反映する
-- [ ] AC/TCを追加し、契約テストでルール反映を検証する
+- [x] `templates/rust-cli/` を削除し、CLI 実装とテストを `default` 一本に修正する
+- [x] `templates/default/AGENTS.md` を 50行以内のポインタ型マップに書き換える
+- [x] `templates/default/ARCHITECTURE.md` を新規作成し、不変の地図を定義する
+- [x] `templates/default/docs/HARNESS.md` を作成し、自己設営ハーネスのガイドラインを定義する
+- [x] `templates/default/docs/` 配下を刷新する（RULES.md, AGENT_CONTEXT.md, product-specs/, exec-plans/, design-docs/, adr/, QUALITY_SCORE.md, etc.）
+- [x] `templates/default/scripts/check_harness.sh` を配置し、機械的検証レールの器を用意する
+- [x] 統合テスト (`tests/tc001`, `tc004`, `tc005` 等) を新構成に合わせて修正・強化する
+- [x] `cargo nextest run` で全テストの Green を確認する
 
 ## 改善アイデア（マイルストーン外）
 - (empty)

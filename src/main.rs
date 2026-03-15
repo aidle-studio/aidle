@@ -8,8 +8,9 @@ use std::path::{Path, PathBuf};
 use std::process::ExitCode;
 use std::time::Instant;
 
-const DEFAULT_TEMPLATE_FILES: [&str; 8] = [
+const DEFAULT_TEMPLATE_FILES: [&str; 28] = [
     "AGENTS.md",
+    "ARCHITECTURE.md",
     "README.md",
     "docs/AGENT_CONTEXT.md",
     "docs/RULES.md",
@@ -17,6 +18,25 @@ const DEFAULT_TEMPLATE_FILES: [&str; 8] = [
     "docs/TODO.md",
     "docs/TEST_PLAN.md",
     "docs/KNOWLEDGE.md",
+    "docs/HARNESS.md",
+    "docs/QUALITY_SCORE.md",
+    "docs/RELIABILITY.md",
+    "docs/SECURITY.md",
+    "docs/PRODUCT_SENSE.md",
+    "docs/DESIGN.md",
+    "docs/PLANS.md",
+    "docs/adr/index.md",
+    "docs/adr/.gitkeep",
+    "docs/design-docs/index.md",
+    "docs/design-docs/core-beliefs.md",
+    "docs/exec-plans/active/.gitkeep",
+    "docs/exec-plans/completed/.gitkeep",
+    "docs/exec-plans/tech-debt.md",
+    "docs/product-specs/index.md",
+    "docs/product-specs/.gitkeep",
+    "docs/references/index.md",
+    "docs/references/.gitkeep",
+    "scripts/check_harness.sh",
 ];
 const DEFAULT_ADAPTER_TEMPLATE_FILES: [&str; 4] = [
     ".github/copilot-instructions.md",
@@ -244,10 +264,10 @@ fn run() -> Result<(), (u8, String)> {
         .template
         .or_else(|| config.template.as_ref().and_then(|t| t.name.clone()))
         .unwrap_or_else(|| "default".to_string());
-    if !matches!(template.as_str(), "default" | "rust-cli") {
+    if !matches!(template.as_str(), "default") {
         return Err(arg_error(
             format!("未対応テンプレート `{template}` です。"),
-            "サポート対象のテンプレート名を指定してください（現在は `default`, `rust-cli`）。",
+            "サポート対象のテンプレート名を指定してください（現在は `default`）。",
         ));
     }
 
