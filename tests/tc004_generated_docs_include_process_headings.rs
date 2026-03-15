@@ -35,10 +35,7 @@ fn tc004_generated_docs_include_process_and_agreement_headings() {
         rules.contains("Agreement Gate"),
         "RULES.md must mention agreement gate: {rules}"
     );
-    assert!(
-        rules.contains("TDD"),
-        "RULES.md must contain TDD: {rules}"
-    );
+    assert!(rules.contains("TDD"), "RULES.md must contain TDD: {rules}");
     assert!(
         test_plan.contains("トレーサビリティ"),
         "TEST_PLAN.md must contain traceability matrix: {test_plan}"

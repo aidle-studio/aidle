@@ -611,7 +611,9 @@ fn create_required_files(
 
     for tf in template_files {
         let path = root.join(&tf.rel_path);
-        if let Some(parent) = path.parent() && let Err(e) = fs::create_dir_all(parent) {
+        if let Some(parent) = path.parent()
+            && let Err(e) = fs::create_dir_all(parent)
+        {
             let err = io_error(&format!("親ディレクトリ作成 ({})", parent.display()), &e);
             rollback_state(&created_files, &overwritten_files);
             return Err(err);
