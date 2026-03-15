@@ -41,6 +41,14 @@ Gemini CLI ユーザー向けに、`aidle` プロジェクトでの開発を120%
 * **SDD Weaver**: 仕様書からテストケースへの書き出しとトレーサビリティ管理を自動化。
 * **Context Manager**: `AGENT_CONTEXT.md` の状態をAIが常に最新に保ちます。
 
+## 🔌 AI Adapters (AIアダプタ)
+
+主要なAIエディタやツール（GitHub Copilot, Gemini CLI, Claude Code等）が、`aidle` の規約をスムーズに理解できるようにするための「薄いアダプタ（設定ファイル）」を生成します。
+
+* **対応ツール**: GitHub Copilot, Gemini CLI, Claude Code
+* **生成方法**: `aidle init --with-adapters` を実行、または対話モードで `Yes` を選択。
+* **役割**: `AGENTS.md` へのポインタとして機能し、どのツールを使っても一貫した開発体験を提供します。
+
 ---
 
 ## 📁 生成されるプロジェクト構造 (AI-Optimized)
