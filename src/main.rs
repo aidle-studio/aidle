@@ -65,9 +65,24 @@ struct TemplateFile {
     content: String,
 }
 
+#[derive(Debug, Clone)]
+enum TemplateSource {
+    Embedded(String),
+    Filesystem(PathBuf),
+}
+
+impl TemplateSource {
+    fn display_name(&self) -> String {
+        match self {
+            TemplateSource::Embedded(name) => name.clone(),
+            TemplateSource::Filesystem(path) => path.display().to_string(),
+        }
+    }
+}
+
 #[derive(Debug)]
 struct RunOptions {
-    template: String,
+    template: TemplateSource,
     agent_format: String,
     non_interactive: bool,
     verbose: bool,
@@ -172,13 +187,26 @@ Options:
 "#
 }
 
-fn is_template_available(name: &str) -> bool {
+fn resolve_template_source(name: &str) -> Option<TemplateSource> {
+    // 1. Check embedded assets first (e.g., "default")
     let prefix = format!("{}/", name);
     if Templates::iter().any(|path| path.starts_with(&prefix)) {
-        return true;
+        return Some(TemplateSource::Embedded(name.to_string()));
     }
-    let template_dir = template_base_dir().join(name);
-    template_dir.exists() && template_dir.is_dir()
+
+    // 2. Check filesystem (direct path)
+    let path = PathBuf::from(name);
+    if path.is_dir() {
+        return Some(TemplateSource::Filesystem(path));
+    }
+
+    // 3. Check filesystem (relative to template base dir)
+    let path = template_base_dir().join(name);
+    if path.is_dir() {
+        return Some(TemplateSource::Filesystem(path));
+    }
+
+    None
 }
 
 fn run() -> Result<(), (u8, String)> {
@@ -306,17 +334,17 @@ fn run() -> Result<(), (u8, String)> {
         resolve_root(&cwd, &config, &cli)?
     };
 
-    let template = cli
+    let template_name = cli
         .template
         .or_else(|| config.template.as_ref().and_then(|t| t.name.clone()))
         .unwrap_or_else(|| "default".to_string());
 
-    if !is_template_available(&template) {
-        return Err(arg_error(
-            format!("unsupported template `{template}`"),
-            "Please specify a supported template name (currently 'default' is built-in).",
-        ));
-    }
+    let template_source = resolve_template_source(&template_name).ok_or_else(|| {
+        arg_error(
+            format!("unsupported template name or invalid path `{template_name}`"),
+            "Please specify a built-in template name (e.g., 'default') or a valid directory path.",
+        )
+    })?;
 
     let agent_format = cli
         .agent_format
@@ -330,7 +358,7 @@ fn run() -> Result<(), (u8, String)> {
     }
 
     let options = RunOptions {
-        template,
+        template: template_source,
         agent_format,
         non_interactive,
         verbose,
@@ -507,7 +535,7 @@ fn template_base_dir() -> PathBuf {
 }
 
 fn load_template_files(
-    template_name: &str,
+    source: &TemplateSource,
     with_adapters: bool,
     _verbose: bool,
 ) -> Result<Vec<TemplateFile>, (u8, String)> {
@@ -517,25 +545,32 @@ fn load_template_files(
     }
     let mut files = Vec::with_capacity(paths.len());
 
-    let template_dir = template_base_dir().join(template_name);
-
     for rel in paths {
-        let embedded_path = format!("{}/{}", template_name, rel);
-        let content = if let Some(embedded_file) = Templates::get(&embedded_path) {
-            String::from_utf8(embedded_file.data.to_vec()).map_err(|e| {
-                template_error(
-                    format!("failed to parse embedded file {}: {e}", embedded_path),
-                    "Internal error: embedded file is not valid UTF-8.",
-                )
-            })?
-        } else {
-            let path = template_dir.join(rel);
-            fs::read_to_string(&path).map_err(|e| {
-                template_error(
-                    format!("failed to read {}: {e}", path.display()),
-                    "Check template placement and file permissions.",
-                )
-            })?
+        let content = match source {
+            TemplateSource::Embedded(name) => {
+                let embedded_path = format!("{}/{}", name, rel);
+                let embedded_file = Templates::get(&embedded_path).ok_or_else(|| {
+                    template_error(
+                        format!("embedded file {} not found", embedded_path),
+                        "Internal error: built-in template is incomplete.",
+                    )
+                })?;
+                String::from_utf8(embedded_file.data.to_vec()).map_err(|e| {
+                    template_error(
+                        format!("failed to parse embedded file {}: {e}", embedded_path),
+                        "Internal error: embedded file is not valid UTF-8.",
+                    )
+                })?
+            }
+            TemplateSource::Filesystem(path) => {
+                let full_path = path.join(rel);
+                fs::read_to_string(&full_path).map_err(|e| {
+                    template_error(
+                        format!("failed to read {}: {e}", full_path.display()),
+                        "Check template placement and file permissions.",
+                    )
+                })?
+            }
         };
 
         files.push(TemplateFile {
@@ -557,28 +592,28 @@ fn rollback_state(created_files: &[PathBuf], overwritten_files: &[(PathBuf, Vec<
 }
 
 #[derive(Serialize)]
-struct JsonSummary<'a> {
+struct JsonSummary {
     created: usize,
     updated: usize,
     skipped: usize,
     errors: usize,
     non_interactive: bool,
-    template: &'a str,
-    agent_format: &'a str,
+    template: String,
+    agent_format: String,
     with_adapters: bool,
     root: String,
 }
 
 #[derive(Serialize)]
-struct StatsLog<'a> {
+struct StatsLog {
     duration_ms: u128,
     created: usize,
     updated: usize,
     skipped: usize,
     errors: usize,
     root: String,
-    template: &'a str,
-    agent_format: &'a str,
+    template: String,
+    agent_format: String,
     with_adapters: bool,
 }
 
@@ -603,8 +638,8 @@ fn write_stats_log(
         skipped: stats.skipped,
         errors: stats.errors,
         root: root.display().to_string(),
-        template: &options.template,
-        agent_format: &options.agent_format,
+        template: options.template.display_name(),
+        agent_format: options.agent_format.clone(),
         with_adapters: options.with_adapters,
     };
     let data = serde_json::to_string_pretty(&payload).map_err(|e| {
@@ -621,7 +656,7 @@ fn print_summary(stats: &RunStats, options: &RunOptions, root: &Path) {
         eprintln!(
             "[verbose] root={} template={} agent_format={} non_interactive={}",
             root.display(),
-            options.template,
+            options.template.display_name(),
             options.agent_format,
             options.non_interactive
         );
@@ -638,8 +673,8 @@ fn print_summary(stats: &RunStats, options: &RunOptions, root: &Path) {
             skipped: stats.skipped,
             errors: stats.errors,
             non_interactive: options.non_interactive,
-            template: &options.template,
-            agent_format: &options.agent_format,
+            template: options.template.display_name(),
+            agent_format: options.agent_format.clone(),
             with_adapters: options.with_adapters,
             root: root.display().to_string(),
         };

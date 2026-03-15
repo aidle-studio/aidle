@@ -35,7 +35,7 @@ fn tc029_rust_cli_is_no_longer_supported() {
 
     let stderr = String::from_utf8_lossy(&output.stderr);
     assert!(
-        stderr.contains("unsupported template `rust-cli`"),
+        stderr.contains("unsupported template name or invalid path `rust-cli`"),
         "stderr must contain cause: {stderr}"
     );
 }
