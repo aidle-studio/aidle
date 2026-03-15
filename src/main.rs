@@ -1,3 +1,4 @@
+use rust_embed::RustEmbed;
 use serde::{Deserialize, Serialize};
 use serde_json::json;
 use std::env;
@@ -38,6 +39,11 @@ const DEFAULT_TEMPLATE_FILES: [&str; 28] = [
     "docs/references/.gitkeep",
     "scripts/check_harness.sh",
 ];
+
+#[derive(RustEmbed)]
+#[folder = "templates/"]
+struct Templates;
+
 const DEFAULT_ADAPTER_TEMPLATE_FILES: [&str; 4] = [
     ".github/copilot-instructions.md",
     ".github/instructions/general.instructions.md",
@@ -164,6 +170,15 @@ Options:
     --json                  Output result summary in JSON format.
     -h, --help              Print help information.
 "#
+}
+
+fn is_template_available(name: &str) -> bool {
+    let prefix = format!("{}/", name);
+    if Templates::iter().any(|path| path.starts_with(&prefix)) {
+        return true;
+    }
+    let template_dir = template_base_dir().join(name);
+    template_dir.exists() && template_dir.is_dir()
 }
 
 fn run() -> Result<(), (u8, String)> {
@@ -295,10 +310,11 @@ fn run() -> Result<(), (u8, String)> {
         .template
         .or_else(|| config.template.as_ref().and_then(|t| t.name.clone()))
         .unwrap_or_else(|| "default".to_string());
-    if !matches!(template.as_str(), "default") {
+
+    if !is_template_available(&template) {
         return Err(arg_error(
             format!("unsupported template `{template}`"),
-            "Please specify a supported template name (currently 'default').",
+            "Please specify a supported template name (currently 'default' is built-in).",
         ));
     }
 
@@ -323,7 +339,7 @@ fn run() -> Result<(), (u8, String)> {
         stats_out,
     };
 
-    let template_files = load_template_files(&options.template, options.with_adapters)?;
+    let template_files = load_template_files(&options.template, options.with_adapters, options.verbose)?;
     let stats = create_required_files(&root, &template_files, dry_run, force)?;
     let duration_ms = started_at.elapsed().as_millis();
     write_stats_log(&options, &stats, &root, duration_ms)?;
@@ -493,22 +509,35 @@ fn template_base_dir() -> PathBuf {
 fn load_template_files(
     template_name: &str,
     with_adapters: bool,
+    _verbose: bool,
 ) -> Result<Vec<TemplateFile>, (u8, String)> {
-    let template_dir = template_base_dir().join(template_name);
     let mut paths = DEFAULT_TEMPLATE_FILES.to_vec();
     if with_adapters {
         paths.extend(DEFAULT_ADAPTER_TEMPLATE_FILES);
     }
     let mut files = Vec::with_capacity(paths.len());
 
+    let template_dir = template_base_dir().join(template_name);
+
     for rel in paths {
-        let path = template_dir.join(rel);
-        let content = fs::read_to_string(&path).map_err(|e| {
-            template_error(
-                format!("failed to read {}: {e}", path.display()),
-                "Check template placement and file permissions.",
-            )
-        })?;
+        let embedded_path = format!("{}/{}", template_name, rel);
+        let content = if let Some(embedded_file) = Templates::get(&embedded_path) {
+            String::from_utf8(embedded_file.data.to_vec()).map_err(|e| {
+                template_error(
+                    format!("failed to parse embedded file {}: {e}", embedded_path),
+                    "Internal error: embedded file is not valid UTF-8.",
+                )
+            })?
+        } else {
+            let path = template_dir.join(rel);
+            fs::read_to_string(&path).map_err(|e| {
+                template_error(
+                    format!("failed to read {}: {e}", path.display()),
+                    "Check template placement and file permissions.",
+                )
+            })?
+        };
+
         files.push(TemplateFile {
             rel_path: rel.to_string(),
             content,
