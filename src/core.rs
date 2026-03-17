@@ -244,27 +244,34 @@ mod tests {
         let source = resolve_template_source("invalid_template_name_12345");
         assert!(source.is_none());
     }
+#[test]
+fn test_load_template_files_embedded() {
+    let source = TemplateSource::Embedded("default".to_string());
+    let files = load_template_files(&source, false, false).unwrap();
+    assert!(!files.is_empty());
+    assert!(files.iter().any(|f| f.rel_path == "AGENTS.md"));
+}
 
-    #[test]
-    fn test_load_template_files_embedded() {
-        let source = TemplateSource::Embedded("default".to_string());
-        let files = load_template_files(&source, false, false).unwrap();
-        assert!(!files.is_empty());
-        assert!(files.iter().any(|f| f.rel_path == "AGENTS.md"));
-    }
+#[test]
+fn test_load_template_files_filesystem_incomplete() {
+    let temp = tempdir().unwrap();
+    let source = TemplateSource::Filesystem(temp.path().to_path_buf());
+    // 必要なファイル（AGENTS.md等）が一つもない状態
+    let res = load_template_files(&source, false, false);
+    assert!(res.is_err());
+}
 
-    #[test]
-    fn test_create_required_files_dry_run() {
-        let temp = tempdir().unwrap();
-        let files = vec![TemplateFile {
-            rel_path: "test.md".to_string(),
-            content: "hello".to_string(),
-        }];
-        let stats = create_required_files(temp.path(), &files, true, false).unwrap();
-        assert_eq!(stats.created, 0);
-        assert!(!temp.path().join("test.md").exists());
-    }
-
+#[test]
+fn test_create_required_files_dry_run() {
+    let temp = tempdir().unwrap();
+    let files = vec![TemplateFile {
+        rel_path: "test.md".to_string(),
+        content: "hello".to_string(),
+    }];
+    let stats = create_required_files(temp.path(), &files, true, false).unwrap();
+    assert_eq!(stats.created, 0);
+    assert!(!temp.path().join("test.md").exists());
+}
     #[test]
     fn test_create_required_files_real_run() {
         let temp = tempdir().unwrap();
