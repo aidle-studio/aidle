@@ -156,7 +156,18 @@ pub fn create_required_files(
     let mut overwritten_files: Vec<(PathBuf, Vec<u8>)> = Vec::new();
 
     for tf in template_files {
-        let path = root.join(&tf.rel_path);
+        // パストラバーサル対策: 相対パスに '../' 等の親ディレクトリ参照が含まれていないかチェック
+        let rel_path = Path::new(&tf.rel_path);
+        if rel_path.components().any(|c| matches!(c, std::path::Component::ParentDir)) {
+            let err = io_error(
+                &format!("invalid template path (traversal attempt): {}", tf.rel_path),
+                &std::io::Error::new(std::io::ErrorKind::InvalidInput, "Path traversal attempt detected"),
+            );
+            rollback_state(&created_files, &overwritten_files);
+            return Err(err);
+        }
+
+        let path = root.join(rel_path);
         if let Some(parent) = path.parent() {
             if let Err(e) = fs::create_dir_all(parent) {
                 let err = io_error(&format!("creating parent directory ({})", parent.display()), &e);
@@ -216,3 +227,102 @@ pub fn create_required_files(
 
     Ok(stats)
 }
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+    use tempfile::tempdir;
+
+    #[test]
+    fn test_resolve_template_source_embedded() {
+        let source = resolve_template_source("default");
+        assert!(matches!(source, Some(TemplateSource::Embedded(_))));
+    }
+
+    #[test]
+    fn test_resolve_template_source_nonexistent() {
+        let source = resolve_template_source("invalid_template_name_12345");
+        assert!(source.is_none());
+    }
+
+    #[test]
+    fn test_load_template_files_embedded() {
+        let source = TemplateSource::Embedded("default".to_string());
+        let files = load_template_files(&source, false, false).unwrap();
+        assert!(!files.is_empty());
+        assert!(files.iter().any(|f| f.rel_path == "AGENTS.md"));
+    }
+
+    #[test]
+    fn test_create_required_files_dry_run() {
+        let temp = tempdir().unwrap();
+        let files = vec![TemplateFile {
+            rel_path: "test.md".to_string(),
+            content: "hello".to_string(),
+        }];
+        let stats = create_required_files(temp.path(), &files, true, false).unwrap();
+        assert_eq!(stats.created, 0);
+        assert!(!temp.path().join("test.md").exists());
+    }
+
+    #[test]
+    fn test_create_required_files_real_run() {
+        let temp = tempdir().unwrap();
+        let files = vec![TemplateFile {
+            rel_path: "test.md".to_string(),
+            content: "hello".to_string(),
+        }];
+        let stats = create_required_files(temp.path(), &files, false, false).unwrap();
+        assert_eq!(stats.created, 1);
+        assert!(temp.path().join("test.md").exists());
+        assert_eq!(fs::read_to_string(temp.path().join("test.md")).unwrap(), "hello");
+    }
+
+    #[test]
+    fn test_create_required_files_force_overwrite() {
+        let temp = tempdir().unwrap();
+        let file_path = temp.path().join("test.md");
+        fs::write(&file_path, "original").unwrap();
+
+        let files = vec![TemplateFile {
+            rel_path: "test.md".to_string(),
+            content: "new".to_string(),
+        }];
+        
+        // Without force
+        let stats = create_required_files(temp.path(), &files, false, false).unwrap();
+        assert_eq!(stats.skipped, 1);
+        assert_eq!(fs::read_to_string(&file_path).unwrap(), "original");
+
+        // With force
+        let stats = create_required_files(temp.path(), &files, false, true).unwrap();
+        assert_eq!(stats.updated, 1);
+        assert_eq!(fs::read_to_string(&file_path).unwrap(), "new");
+    }
+
+    #[test]
+    fn test_create_required_files_path_traversal() {
+        let temp = tempdir().unwrap();
+        let root = temp.path();
+        let evil_rel_path = "../traversal_evil.txt";
+        let evil_abs_path = root.parent().unwrap().join("traversal_evil.txt");
+        
+        // 実行前にファイルが存在しないことを確認
+        assert!(!evil_abs_path.exists());
+
+        let files = vec![TemplateFile {
+            rel_path: evil_rel_path.to_string(),
+            content: "evil".to_string(),
+        }];
+        
+        let res = create_required_files(root, &files, false, false);
+        
+        // エラーが返ることを確認
+        assert!(res.is_err());
+        // rootの外（親ディレクトリ）にファイルが作成されていないことを確認
+        assert!(!evil_abs_path.exists());
+    }
+}
+
+
+
