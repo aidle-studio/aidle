@@ -86,3 +86,57 @@ pub fn compare_headings(template_content: &str, local_content: &str) -> Vec<Stri
         .filter(|h| !local_headings_set.contains(h))
         .collect()
 }
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    #[test]
+    fn test_extract_headings() {
+        let markdown = r#"
+# Title
+## Section 1
+### Sub section
+## Section 2
+"#;
+        let headings = extract_headings(markdown);
+        assert_eq!(headings, vec!["title", "section 1", "sub section", "section 2"]);
+    }
+
+    #[test]
+    fn test_compare_headings() {
+        let template = r#"
+# Rules
+## Rule 1
+## Rule 2
+"#;
+        let local = r#"
+# Rules
+## Rule 1
+"#;
+        let missing = compare_headings(template, local);
+        assert_eq!(missing, vec!["rule 2"]);
+    }
+
+    #[test]
+    fn test_extract_section_content() {
+        let markdown = r#"
+## Target Section
+This is the content.
+It has multiple lines.
+
+## Next Section
+Other content.
+"#;
+        let content = extract_section_content(markdown, "Target Section");
+        assert!(content.contains("This is the content."));
+        assert!(content.contains("It has multiple lines."));
+        assert!(!content.contains("Other content."));
+    }
+
+    #[test]
+    fn test_normalize_heading() {
+        assert_eq!(normalize_heading("  Heading  "), "heading");
+        assert_eq!(normalize_heading("Heading!"), "heading!");
+    }
+}

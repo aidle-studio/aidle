@@ -5,7 +5,7 @@ use serde::{Deserialize, Serialize};
 use serde_json::json;
 use std::env;
 use std::fs::{self, OpenOptions};
-use std::io::{self, IsTerminal, Write};
+use std::io::{IsTerminal, Write};
 use std::path::{Path, PathBuf};
 use std::process::ExitCode;
 use std::time::Instant;
