@@ -20,7 +20,11 @@ fn tc019_incomplete_template_returns_code_3_with_cause_and_action() {
         .output()
         .expect("failed to execute aidle");
 
-    assert_eq!(output.status.code(), Some(3), "exit code must be 3 for incomplete template");
+    assert_eq!(
+        output.status.code(),
+        Some(3),
+        "exit code must be 3 for incomplete template"
+    );
 
     let stderr = String::from_utf8_lossy(&output.stderr);
     assert!(

@@ -1,18 +1,18 @@
+pub mod cli;
 mod commands;
 pub mod core;
-pub mod cli;
 pub mod utils;
 
+use serde_json::json;
 use std::env;
 use std::io::IsTerminal;
 use std::path::{Path, PathBuf};
 use std::process::ExitCode;
 use std::time::Instant;
-use serde_json::json;
 
-use crate::core::{load_template_files, create_required_files, resolve_template_source};
-use crate::cli::{AidleConfig, RunOptions, parse_cli_options, load_config, resolve_root};
-use crate::utils::{RunStats, JsonSummary, StatsLog, arg_error, io_error};
+use crate::cli::{AidleConfig, RunOptions, load_config, parse_cli_options, resolve_root};
+use crate::core::{create_required_files, load_template_files, resolve_template_source};
+use crate::utils::{JsonSummary, RunStats, StatsLog, arg_error, io_error};
 
 fn main() -> ExitCode {
     match run() {
@@ -58,7 +58,7 @@ fn run() -> Result<(), (u8, String)> {
     let config = load_config(&cwd)?;
 
     let args_raw: Vec<String> = env::args().skip(1).collect();
-    
+
     // 全体の引数にヘルプフラグが含まれているかチェック
     if args_raw.iter().any(|arg| arg == "--help" || arg == "-h") {
         println!("{}", help_text());
@@ -224,7 +224,12 @@ fn run() -> Result<(), (u8, String)> {
         stats_out,
     };
 
-    let template_files = load_template_files(&options.template, &options.lang, options.with_adapters, options.verbose)?;
+    let template_files = load_template_files(
+        &options.template,
+        &options.lang,
+        options.with_adapters,
+        options.verbose,
+    )?;
     let stats = create_required_files(&root, &template_files, dry_run, force)?;
     let duration_ms = started_at.elapsed().as_millis();
     write_stats_log(&options, &stats, &root, duration_ms)?;
@@ -257,7 +262,8 @@ fn handle_check_command(
     })?;
 
     // テンプレートファイルを読み込む
-    let template_files = load_template_files(&template_source, &lang, cli.with_adapters, cli.verbose)?;
+    let template_files =
+        load_template_files(&template_source, &lang, cli.with_adapters, cli.verbose)?;
     let mut missing_found = false;
 
     println!("--- aidle Structural Consistency Check ---");
@@ -304,7 +310,9 @@ fn handle_check_command(
     if !missing_found {
         println!("\nAll documents are up-to-date with the latest template concepts.");
     } else {
-        println!("\nPlease incorporate the missing concepts into your project to align with the latest standards.");
+        println!(
+            "\nPlease incorporate the missing concepts into your project to align with the latest standards."
+        );
     }
 
     Ok(())
@@ -321,7 +329,8 @@ fn write_stats_log(
     };
 
     if let Some(parent) = path.parent() {
-        std::fs::create_dir_all(parent).map_err(|e| io_error("creating stats log directory", &e))?;
+        std::fs::create_dir_all(parent)
+            .map_err(|e| io_error("creating stats log directory", &e))?;
     }
 
     let payload = StatsLog {

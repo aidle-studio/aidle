@@ -21,11 +21,17 @@ fn test_check_command_detects_multiple_missing_concepts() {
     let security_path = project_root.join("docs/SECURITY.md");
 
     let rules_content = fs::read_to_string(&rules_path).unwrap();
-    let new_rules = rules_content.replace("## 7. プロセスの進化 (Process Evolution)", "## Removed Rules");
+    let new_rules = rules_content.replace(
+        "## 7. プロセスの進化 (Process Evolution)",
+        "## Removed Rules",
+    );
     fs::write(&rules_path, new_rules).unwrap();
 
     let security_content = fs::read_to_string(&security_path).unwrap();
-    let new_security = security_content.replace("## 🛡️ セキュアコーディング原則 (Secure by Design)", "## Removed Security");
+    let new_security = security_content.replace(
+        "## 🛡️ セキュアコーディング原則 (Secure by Design)",
+        "## Removed Security",
+    );
     fs::write(&security_path, new_security).unwrap();
 
     // 3. Run check - should detect all missing sections
@@ -35,9 +41,13 @@ fn test_check_command_detects_multiple_missing_concepts() {
         .assert()
         .success()
         .stdout(predicate::str::contains("docs/RULES.md"))
-        .stdout(predicate::str::contains("7. プロセスの進化 (process evolution)"))
+        .stdout(predicate::str::contains(
+            "7. プロセスの進化 (process evolution)",
+        ))
         .stdout(predicate::str::contains("docs/SECURITY.md"))
-        .stdout(predicate::str::contains("セキュアコーディング原則 (secure by design)"));
+        .stdout(predicate::str::contains(
+            "セキュアコーディング原則 (secure by design)",
+        ));
 }
 
 #[test]
@@ -56,7 +66,7 @@ fn test_check_command_heading_order_independence() {
     // 2. Swap sections in RULES.md
     let rules_path = project_root.join("docs/RULES.md");
     let rules_content = fs::read_to_string(&rules_path).unwrap();
-    
+
     // Simple swap of Section 1 and Section 2 (simplified approach for test)
     let parts: Vec<&str> = rules_content.split("##").collect();
     if parts.len() > 3 {

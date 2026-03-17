@@ -1,8 +1,8 @@
-use serde::Deserialize;
-use std::path::{Path, PathBuf};
-use std::fs;
 use crate::core::TemplateSource;
 use crate::utils::arg_error;
+use serde::Deserialize;
+use std::fs;
+use std::path::{Path, PathBuf};
 
 #[derive(Debug)]
 pub struct RunOptions {
@@ -86,18 +86,18 @@ pub struct StatsConfig {
 pub fn parse_cli_options(args: impl Iterator<Item = String>) -> Result<CliOptions, (u8, String)> {
     let mut cli = CliOptions::default();
     let mut it = args.peekable();
-while let Some(arg) = it.next() {
-    match arg.as_str() {
-        "--lang" => {
-            let value = it.next().ok_or_else(|| {
-                arg_error(
-                    "missing value for `--lang`".to_string(),
-                    "Specify as `--lang <ja|en>`.",
-                )
-            })?;
-            cli.lang = Some(value);
-        }
-        "--dry-run" => cli.dry_run = true,
+    while let Some(arg) = it.next() {
+        match arg.as_str() {
+            "--lang" => {
+                let value = it.next().ok_or_else(|| {
+                    arg_error(
+                        "missing value for `--lang`".to_string(),
+                        "Specify as `--lang <ja|en>`.",
+                    )
+                })?;
+                cli.lang = Some(value);
+            }
+            "--dry-run" => cli.dry_run = true,
             "--force" => cli.force = true,
             "--non-interactive" => cli.non_interactive = true,
             "--verbose" => cli.verbose = true,
@@ -231,69 +231,78 @@ mod tests {
 
     #[test]
     fn test_parse_cli_options_basic() {
-        let args = vec!["init", "myproj", "--force", "--verbose"].into_iter().map(String::from);
+        let args = vec!["init", "myproj", "--force", "--verbose"]
+            .into_iter()
+            .map(String::from);
         let cli = parse_cli_options(args.skip(1)).unwrap();
         assert_eq!(cli.dir, Some(PathBuf::from("myproj")));
         assert!(cli.force);
         assert!(cli.verbose);
     }
-#[test]
-fn test_parse_cli_options_error_duplicate_dir() {
-    let args = vec!["init", "dir1", "dir2"].into_iter().map(String::from);
-    let res = parse_cli_options(args.skip(1));
-    assert!(res.is_err());
-}
+    #[test]
+    fn test_parse_cli_options_error_duplicate_dir() {
+        let args = vec!["init", "dir1", "dir2"].into_iter().map(String::from);
+        let res = parse_cli_options(args.skip(1));
+        assert!(res.is_err());
+    }
 
-#[test]
-fn test_parse_cli_options_error_missing_stats_out_value() {
-    let args = vec!["init", "--stats-out"].into_iter().map(String::from);
-    let res = parse_cli_options(args.skip(1));
-    assert!(res.is_err());
-}
+    #[test]
+    fn test_parse_cli_options_error_missing_stats_out_value() {
+        let args = vec!["init", "--stats-out"].into_iter().map(String::from);
+        let res = parse_cli_options(args.skip(1));
+        assert!(res.is_err());
+    }
 
-#[test]
-fn test_parse_cli_options_error_missing_output_value() {
-    let args = vec!["init", "--output"].into_iter().map(String::from);
-    let res = parse_cli_options(args.skip(1));
-    assert!(res.is_err());
-}
+    #[test]
+    fn test_parse_cli_options_error_missing_output_value() {
+        let args = vec!["init", "--output"].into_iter().map(String::from);
+        let res = parse_cli_options(args.skip(1));
+        assert!(res.is_err());
+    }
 
-#[test]
-fn test_parse_cli_options_error_missing_template_value() {
-    let args = vec!["init", "--template"].into_iter().map(String::from);
-    let res = parse_cli_options(args.skip(1));
-    assert!(res.is_err());
-}
+    #[test]
+    fn test_parse_cli_options_error_missing_template_value() {
+        let args = vec!["init", "--template"].into_iter().map(String::from);
+        let res = parse_cli_options(args.skip(1));
+        assert!(res.is_err());
+    }
 
-#[test]
-fn test_parse_cli_options_error_missing_agent_format_value() {
-    let args = vec!["init", "--agent-format"].into_iter().map(String::from);
-    let res = parse_cli_options(args.skip(1));
-    assert!(res.is_err());
-}
+    #[test]
+    fn test_parse_cli_options_error_missing_agent_format_value() {
+        let args = vec!["init", "--agent-format"].into_iter().map(String::from);
+        let res = parse_cli_options(args.skip(1));
+        assert!(res.is_err());
+    }
 
-#[test]
-fn test_parse_cli_options_error_unsupported_option() {
-    let args = vec!["init", "--unknown-flag"].into_iter().map(String::from);
-    let res = parse_cli_options(args.skip(1));
-    assert!(res.is_err());
-}
+    #[test]
+    fn test_parse_cli_options_error_unsupported_option() {
+        let args = vec!["init", "--unknown-flag"].into_iter().map(String::from);
+        let res = parse_cli_options(args.skip(1));
+        assert!(res.is_err());
+    }
 
-#[test]
-fn test_load_config_nonexistent() {
-    let temp = tempdir().unwrap();
-    let config = load_config(temp.path()).unwrap();
-    assert!(config.project.is_none());
-}
+    #[test]
+    fn test_load_config_nonexistent() {
+        let temp = tempdir().unwrap();
+        let config = load_config(temp.path()).unwrap();
+        assert!(config.project.is_none());
+    }
     #[test]
     fn test_load_config_valid() {
         let temp = tempdir().unwrap();
         let toml_path = temp.path().join("aidle.toml");
-        fs::write(toml_path, r#"[project]
+        fs::write(
+            toml_path,
+            r#"[project]
 name = "test-project"
-"#).unwrap();
+"#,
+        )
+        .unwrap();
         let config = load_config(temp.path()).unwrap();
-        assert_eq!(config.project.unwrap().name, Some("test-project".to_string()));
+        assert_eq!(
+            config.project.unwrap().name,
+            Some("test-project".to_string())
+        );
     }
 
     #[test]
@@ -314,4 +323,3 @@ name = "test-project"
         assert_eq!(root, cwd.join("rel/path"));
     }
 }
-

@@ -42,7 +42,10 @@ fn test_check_command_detects_missing_section() {
     let rules_path = project_root.join("docs/RULES.md");
     let content = fs::read_to_string(&rules_path).unwrap();
     // Remove the section "7. プロセスの進化" (Heading normalized to "7. プロセスの進化 (process evolution)")
-    let new_content = content.replace("## 7. プロセスの進化 (Process Evolution)", "## Removed Section");
+    let new_content = content.replace(
+        "## 7. プロセスの進化 (Process Evolution)",
+        "## Removed Section",
+    );
     fs::write(&rules_path, new_content).unwrap();
 
     // 3. Run check - should detect the missing section
@@ -51,8 +54,12 @@ fn test_check_command_detects_missing_section() {
         .current_dir(project_root)
         .assert()
         .success()
-        .stdout(predicate::str::contains("Missing sections (concepts) detected."))
-        .stdout(predicate::str::contains("7. プロセスの進化 (process evolution)"));
+        .stdout(predicate::str::contains(
+            "Missing sections (concepts) detected.",
+        ))
+        .stdout(predicate::str::contains(
+            "7. プロセスの進化 (process evolution)",
+        ));
 }
 
 #[test]

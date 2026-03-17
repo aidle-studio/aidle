@@ -100,7 +100,10 @@ mod tests {
 ## Section 2
 "#;
         let headings = extract_headings(markdown);
-        assert_eq!(headings, vec!["title", "section 1", "sub section", "section 2"]);
+        assert_eq!(
+            headings,
+            vec!["title", "section 1", "sub section", "section 2"]
+        );
     }
 
     #[test]

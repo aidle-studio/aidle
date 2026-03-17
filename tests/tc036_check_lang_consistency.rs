@@ -32,7 +32,9 @@ fn test_check_command_respects_lang_en() {
         .current_dir(project_root)
         .assert()
         .success()
-        .stdout(predicate::str::contains("Missing sections (concepts) detected."))
+        .stdout(predicate::str::contains(
+            "Missing sections (concepts) detected.",
+        ))
         .stdout(predicate::str::contains("7. process evolution"));
 }
 
@@ -50,7 +52,7 @@ fn test_check_command_fails_if_lang_mismatch() {
         .success();
 
     // 2. Run check with --lang en
-    // English template has "RULES.md" headings like "1. Development Principles", 
+    // English template has "RULES.md" headings like "1. Development Principles",
     // but Japanese local has "1. 開発原則". So it should report many missing concepts.
     let mut cmd = Command::cargo_bin("aidle").unwrap();
     cmd.arg("check")
@@ -59,6 +61,8 @@ fn test_check_command_fails_if_lang_mismatch() {
         .current_dir(project_root)
         .assert()
         .success()
-        .stdout(predicate::str::contains("Missing sections (concepts) detected."))
+        .stdout(predicate::str::contains(
+            "Missing sections (concepts) detected.",
+        ))
         .stdout(predicate::str::contains("1. development principles"));
 }
