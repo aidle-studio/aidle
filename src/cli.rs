@@ -7,6 +7,7 @@ use crate::utils::arg_error;
 #[derive(Debug)]
 pub struct RunOptions {
     pub template: TemplateSource,
+    pub lang: String,
     pub agent_format: String,
     pub non_interactive: bool,
     pub verbose: bool,
@@ -19,6 +20,7 @@ pub struct RunOptions {
 pub struct CliOptions {
     pub dir: Option<PathBuf>,
     pub output: Option<PathBuf>,
+    pub lang: Option<String>,
     pub dry_run: bool,
     pub force: bool,
     pub non_interactive: bool,
@@ -34,6 +36,7 @@ pub struct CliOptions {
 pub struct AidleConfig {
     pub project: Option<ProjectConfig>,
     pub template: Option<TemplateConfig>,
+    pub language: Option<LanguageConfig>,
     pub agent: Option<AgentConfig>,
     pub execution: Option<ExecutionConfig>,
     pub adapters: Option<AdaptersConfig>,
@@ -49,6 +52,11 @@ pub struct ProjectConfig {
 #[derive(Debug, Default, Deserialize)]
 pub struct TemplateConfig {
     pub name: Option<String>,
+}
+
+#[derive(Debug, Default, Deserialize)]
+pub struct LanguageConfig {
+    pub default: Option<String>,
 }
 
 #[derive(Debug, Default, Deserialize)]
@@ -78,10 +86,18 @@ pub struct StatsConfig {
 pub fn parse_cli_options(args: impl Iterator<Item = String>) -> Result<CliOptions, (u8, String)> {
     let mut cli = CliOptions::default();
     let mut it = args.peekable();
-
-    while let Some(arg) = it.next() {
-        match arg.as_str() {
-            "--dry-run" => cli.dry_run = true,
+while let Some(arg) = it.next() {
+    match arg.as_str() {
+        "--lang" => {
+            let value = it.next().ok_or_else(|| {
+                arg_error(
+                    "missing value for `--lang`".to_string(),
+                    "Specify as `--lang <ja|en>`.",
+                )
+            })?;
+            cli.lang = Some(value);
+        }
+        "--dry-run" => cli.dry_run = true,
             "--force" => cli.force = true,
             "--non-interactive" => cli.non_interactive = true,
             "--verbose" => cli.verbose = true,

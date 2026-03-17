@@ -62,10 +62,12 @@ impl TemplateSource {
 }
 
 pub fn resolve_template_source(name: &str) -> Option<TemplateSource> {
-    // 1. 埋め込みアセットを優先チェック
-    let prefix = format!("{}/", name);
+    // 1. 埋め込みアセットを優先チェック（"ja", "en", "default" 等）
+    // RustEmbed は templates/<lang>/... というパスで保持されている
+    let search_name = if name == "default" { "ja" } else { name };
+    let prefix = format!("{}/", search_name);
     if Templates::iter().any(|path| path.starts_with(&prefix)) {
-        return Some(TemplateSource::Embedded(name.to_string()));
+        return Some(TemplateSource::Embedded(search_name.to_string()));
     }
 
     // 2. ファイルシステム（直接パス）
@@ -92,6 +94,7 @@ pub fn template_base_dir() -> PathBuf {
 
 pub fn load_template_files(
     source: &TemplateSource,
+    lang: &str,
     with_adapters: bool,
     _verbose: bool,
 ) -> Result<Vec<TemplateFile>, (u8, String)> {
@@ -104,11 +107,17 @@ pub fn load_template_files(
     for rel in paths {
         let content = match source {
             TemplateSource::Embedded(name) => {
-                let embedded_path = format!("{}/{}", name, rel);
+                // name が ja/en などの具体的な言語名を指している場合は、
+                // 指定された lang を優先してパスを構築する。
+                // ただし、もし name が特定のテンプレート名（将来的な拡張用）である場合は
+                // その名前をルートディレクトリとして使用する。
+                let root_dir = if name == "ja" || name == "en" { lang } else { name };
+                let embedded_path = format!("{}/{}", root_dir, rel);
+                
                 let embedded_file = Templates::get(&embedded_path).ok_or_else(|| {
                     template_error(
-                        format!("embedded file {} not found", embedded_path),
-                        "Internal error: built-in template is incomplete.",
+                        format!("embedded file '{}' not found (source name: '{}', requested lang: '{}')", embedded_path, name, lang),
+                        "Check if the language directory exists in the template.",
                     )
                 })?;
                 String::from_utf8(embedded_file.data.to_vec()).map_err(|e| {
@@ -119,11 +128,12 @@ pub fn load_template_files(
                 })?
             }
             TemplateSource::Filesystem(path) => {
-                let full_path = path.join(rel);
+                // ファイルシステムの場合は、指定された言語ディレクトリをパスに含める
+                let full_path = path.join(lang).join(rel);
                 fs::read_to_string(&full_path).map_err(|e| {
                     template_error(
                         format!("failed to read {}: {e}", full_path.display()),
-                        "Check template placement and file permissions.",
+                        "Check template placement and file permissions for the specified language.",
                     )
                 })?
             }
@@ -232,34 +242,39 @@ pub fn create_required_files(
 mod tests {
     use super::*;
     use tempfile::tempdir;
+#[test]
+fn test_resolve_template_source_embedded() {
+    // "ja" ディレクトリが存在することを確認
+    let source = resolve_template_source("ja");
+    assert!(matches!(source, Some(TemplateSource::Embedded(s)) if s == "ja"));
 
-    #[test]
-    fn test_resolve_template_source_embedded() {
-        let source = resolve_template_source("default");
-        assert!(matches!(source, Some(TemplateSource::Embedded(_))));
-    }
+    // "default" が "ja" にマッピングされることを確認
+    let source_default = resolve_template_source("default");
+    assert!(matches!(source_default, Some(TemplateSource::Embedded(s)) if s == "ja"));
+}
 
-    #[test]
-    fn test_resolve_template_source_nonexistent() {
-        let source = resolve_template_source("invalid_template_name_12345");
-        assert!(source.is_none());
-    }
+#[test]
+fn test_resolve_template_source_nonexistent() {
+    let source = resolve_template_source("invalid_lang_code_xyz");
+    assert!(source.is_none());
+}
+
 #[test]
 fn test_load_template_files_embedded() {
-    let source = TemplateSource::Embedded("default".to_string());
-    let files = load_template_files(&source, false, false).unwrap();
+    let source = TemplateSource::Embedded("ja".to_string());
+    let files = load_template_files(&source, "ja", false, false).unwrap();
     assert!(!files.is_empty());
     assert!(files.iter().any(|f| f.rel_path == "AGENTS.md"));
 }
 
-#[test]
-fn test_load_template_files_filesystem_incomplete() {
-    let temp = tempdir().unwrap();
-    let source = TemplateSource::Filesystem(temp.path().to_path_buf());
-    // 必要なファイル（AGENTS.md等）が一つもない状態
-    let res = load_template_files(&source, false, false);
-    assert!(res.is_err());
-}
+    #[test]
+    fn test_load_template_files_filesystem_incomplete() {
+        let temp = tempdir().unwrap();
+        let source = TemplateSource::Filesystem(temp.path().to_path_buf());
+        // 必要なファイル（AGENTS.md等）が一つもない状態
+        let res = load_template_files(&source, "ja", false, false);
+        assert!(res.is_err());
+    }
 
 #[test]
 fn test_create_required_files_dry_run() {

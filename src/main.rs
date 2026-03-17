@@ -38,6 +38,7 @@ Subcommands:
 
 Options:
     --output <path>         Set output root directory (cannot be used with [dir]).
+    --lang <ja|en>          Language for templates (default: "ja").
     --template <name>       Template name to use (default: "default").
     --agent-format <name>   Agent convention format (default: "agents-md").
     --with-adapters         Generate AI adapters (Copilot, Gemini, Claude).
@@ -207,8 +208,14 @@ fn run() -> Result<(), (u8, String)> {
         ));
     }
 
+    let lang = cli
+        .lang
+        .or_else(|| config.language.as_ref().and_then(|l| l.default.clone()))
+        .unwrap_or_else(|| "ja".to_string());
+
     let options = RunOptions {
         template: template_source,
+        lang,
         agent_format,
         non_interactive,
         verbose,
@@ -217,7 +224,7 @@ fn run() -> Result<(), (u8, String)> {
         stats_out,
     };
 
-    let template_files = load_template_files(&options.template, options.with_adapters, options.verbose)?;
+    let template_files = load_template_files(&options.template, &options.lang, options.with_adapters, options.verbose)?;
     let stats = create_required_files(&root, &template_files, dry_run, force)?;
     let duration_ms = started_at.elapsed().as_millis();
     write_stats_log(&options, &stats, &root, duration_ms)?;
@@ -236,6 +243,11 @@ fn handle_check_command(
         .or_else(|| config.template.as_ref().and_then(|t| t.name.clone()))
         .unwrap_or_else(|| "default".to_string());
 
+    let lang = cli
+        .lang
+        .or_else(|| config.language.as_ref().and_then(|l| l.default.clone()))
+        .unwrap_or_else(|| "ja".to_string());
+
     // 比較対象となるテンプレートソースを決定する
     let template_source = resolve_template_source(&template_name).ok_or_else(|| {
         arg_error(
@@ -245,7 +257,7 @@ fn handle_check_command(
     })?;
 
     // テンプレートファイルを読み込む
-    let template_files = load_template_files(&template_source, cli.with_adapters, cli.verbose)?;
+    let template_files = load_template_files(&template_source, &lang, cli.with_adapters, cli.verbose)?;
     let mut missing_found = false;
 
     println!("--- aidle Structural Consistency Check ---");
