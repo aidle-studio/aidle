@@ -20,6 +20,9 @@
 - [ ] T1: [TODO: タスクの内容]
 - [ ] T2: [TODO: タスクの内容]
 - [ ] T3: [TODO: タスクの内容]
+- [ ] **(DoD)**: `RULES.md` の自己レビューチェックリストを実施し、問題を修正する。
+- [ ] **(DoD)**: `scripts/check_harness.sh` を実行し、全項目（Lint/Test/Coverage）が Green であることを確認する。
+- [ ] **(GC)**: 本プランを `docs/exec-plans/completed/` に移動し、得られた重要な教訓を `docs/KNOWLEDGE.md` に追記する。
 
 ## Iteration Plan
 1. Iteration 1: [TODO: T1とT2を実装するなど]

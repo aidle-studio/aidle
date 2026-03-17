@@ -8,15 +8,15 @@
 
 ## Milestones
 
-### MS1: 基盤構築とハーネス設営
+### MS1: 基盤構築とハーネス設営 (Bootstrapping)
 **達成条件**
-- プロジェクトの `ARCHITECTURE.md` が整備され、AI自身のための `check_harness.sh` が動作している。
-- `SPEC.md` において初期要件が定義され、合意されている。
+- プロジェクトの言語・環境が決定され、`check_harness.sh` が動作している。
+- `ARCHITECTURE.md` と `SPEC.md` の初期版が作成され、合意されている。
 
-**TODO**
-- [ ] [ ] 自分のための検証ツール（Harness）を設営する
-- [ ] [ ] `ARCHITECTURE.md` を読み、ディレクトリ構成を理解する
-- [ ] [ ] `SPEC.md` を作成し、AC-001 を定義する
+**TODO (AIエージェントへの指示)**
+- [ ] [ ] **Step 1**: ユーザーに開発言語と主要なフレームワークをヒアリング（または推測）し、合意する。
+- [ ] [ ] **Step 2**: 決定した言語に合わせて `scripts/check_harness.sh` を実装し、自分のための検証レール（Harness）を設営する。
+- [ ] [ ] **Step 3**: プロジェクトの目的をヒアリングし、`ARCHITECTURE.md` (技術スタック) と `SPEC.md` (初期要件 AC-001) を作成する。
 
 ### MS2: 主要機能の実装 (Phase 1)
 **達成条件**
