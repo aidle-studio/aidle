@@ -1,29 +1,37 @@
 ---
 name: aidle-skill
-description: "aidleプロジェクトのためのプロフェッショナルなエージェント・ワークフロー。Harnessの設営、仕様(SDD)とテスト(TDD)の連携、およびコンテキストの同期が必要な際に使用します。"
+description: "aidleプロジェクトのためのプロフェッショナルなエージェント・ワークフロー。Tier別のテスト密度、自己レビュー、Secure by Design、およびコンテキストの断捨離（GC）が必要な際に使用します。"
 ---
 
-# aidle Pro Agent Workflow
+# aidle Pro Agent Workflow (Enhanced)
 
-このスキルは、`aidle` によって初期化されたプロジェクトにおいて、AIエージェントが最大のパフォーマンスを発揮するための「プロフェッショナルな仕事術」を提供します。
+このスキルは、`aidle` プロジェクトにおいて、AIエージェントが「自己修復・自己進化」を繰り返しながら、最高レベルの品質と安全性を自律的に保証するための「エキスパート・マニュアル」です。
 
-## 1. Harness Pilot (環境設営と自己修復)
-プロジェクト参画時や新しい環境に入った際は、真っ先に検証環境（Harness）を設営してください。
+## 1. Harness & Tier Pilot (戦略的検証)
+プロジェクト参画時やタスク開始時は、重要度（Tier）に合わせた検証レール（Harness）を自律的に設営してください。
 
-*   **言語別のベストプラクティス**: [references/harness-patterns.md](references/harness-patterns.md) を参照し、最も高速なリンターや自動修正フックをセットアップしてください。
-*   **完了条件**: `scripts/check_harness.sh` がエラーなく実行できる状態を維持すること。
+*   **Tier 1 (Core)**: 分岐網羅100%を目指すガチ検証。E2E/Liveテストも必須。
+*   **Tier 2 (Feature)**: 主要機能の網羅。UT/IT/E2Eのバランス重視。
+*   **Tier 3 (Utility)**: 正常系中心のスマートな検証。
+*   **完了条件**: `scripts/check_harness.sh` が Tier 別の全項目で SUCCESS であること。
 
-## 2. SDD Weaver (仕様とテストの仲介)
-コーディングを始める前に、必ず仕様とテストのトレーサビリティを確保してください。
+## 2. SDD & TDD Weaver (多層防御設計)
+コーディング前に、仕様とテストの「密度」と「比率」を設計してください。
 
-*   **詳細手順**: [references/sdd-workflows.md](references/sdd-workflows.md) を参照。
-*   **原則**: 仕様 (`SPEC.md` / `AC-*`) -> テスト (`TEST_PLAN.md` / `TC-*`) -> 実装 (Code) の順序を厳守すること。
+*   **テストピラミッド (UT > IT)**: ロジックの全分岐をUTで、境界と状態遷移をITで守る。
+*   **失敗モード分析 (FMEA)**: 「どう壊れるか」を事前にリストアップし、テストケース（TC）に反映せよ。
+*   **原則**: 仕様 (AC) -> テスト (TC) -> 実装 (Act) -> レビュー (Review) -> 検証 (Verify) の順序を厳守すること。
 
-## 3. Context Manager (文脈の同期)
-セッションの開始時、またはマイルストーンの変更時には、プロジェクトの文脈（コンテキスト）を常に最新に保ってください。
+## 3. Security & Review Guardian (安全と品質の番人)
+いかなる変更も、以下の「鉄壁のガードレール」をパスしなければなりません。
 
-*   **同期の実行**:
-    必要に応じて `python3 scripts/sync_context.py` を実行（またはスクリプトを拡張）し、`docs/AGENT_CONTEXT.md` の「現在フェーズ」と「次アクション」を正しく更新してください。
+*   **Secure by Design**: 最小権限、ゼロトラスト、安全な失敗を設計に組み込め。
+*   **要注意パターン (Agreement Gate)**: `eval` やシェルインジェクション、機密情報の漏洩リスクがある実装は、必ず人間にリスクを説明し「合意」を得ること。
+*   **自己レビューチェックリスト**: `docs/RULES.md` に基づき、Code/Test/Harness/Docs/Design/Performance の全項目を自ら評価せよ（自己批判の精神）。
 
-## 4. Quality Guardian (品質の保証)
-いかなる変更も、`docs/RULES.md` および `docs/QUALITY_SCORE.md` の基準を満たす必要があります。変更後は、人間による承認（Agreement Gate）を求める前に、必ず自己検証（Harnessの実行）を完了させてください。
+## 4. Context & Kaizen Manager (文脈の同期と断捨離)
+プロジェクトの状態を常にクリーンに保ち、プロセス自体を常に進化させてください。
+
+*   **アトミック同期**: `TODO.md`, `AGENT_CONTEXT.md`, `KNOWLEDGE.md` を常に整合させて更新すること。
+*   **断捨離 (GC)**: タスク完了時、プランを `completed/` へ移動し、教訓を `KNOWLEDGE.md` に抽出して知見を「結晶化」させよ。
+*   **継続的改善 (Kaizen)**: ルールの不備を見つけたら、即座に改善案（`RULES.md` の進化）を提案せよ。
