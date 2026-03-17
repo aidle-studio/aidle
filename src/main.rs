@@ -1,10 +1,11 @@
+mod commands;
+
 use rust_embed::RustEmbed;
 use serde::{Deserialize, Serialize};
 use serde_json::json;
 use std::env;
 use std::fs::{self, OpenOptions};
-use std::io::IsTerminal;
-use std::io::Write;
+use std::io::{self, IsTerminal, Write};
 use std::path::{Path, PathBuf};
 use std::process::ExitCode;
 use std::time::Instant;
@@ -171,6 +172,7 @@ Usage:
 
 Subcommands:
     init [dir]    Initialize a new project in [dir] or current directory.
+    check         Verify structural consistency between local documents and the template.
 
 Options:
     --output <path>         Set output root directory (cannot be used with [dir]).
@@ -229,6 +231,10 @@ fn run() -> Result<(), (u8, String)> {
             return Err((2, msg));
         }
     };
+
+    if command == "check" {
+        return handle_check_command(&cwd, &config, args);
+    }
 
     if command != "init" {
         return Err(arg_error(
@@ -372,6 +378,79 @@ fn run() -> Result<(), (u8, String)> {
     let duration_ms = started_at.elapsed().as_millis();
     write_stats_log(&options, &stats, &root, duration_ms)?;
     print_summary(&stats, &options, &root);
+    Ok(())
+}
+
+fn handle_check_command(
+    cwd: &Path,
+    config: &AidleConfig,
+    args: impl Iterator<Item = String>,
+) -> Result<(), (u8, String)> {
+    let cli = parse_cli_options(args)?;
+    let template_name = cli
+        .template
+        .or_else(|| config.template.as_ref().and_then(|t| t.name.clone()))
+        .unwrap_or_else(|| "default".to_string());
+
+    // 比較対象となるテンプレートソースを決定する
+    let template_source = resolve_template_source(&template_name).ok_or_else(|| {
+        arg_error(
+            format!("unsupported template name or invalid path `{template_name}`"),
+            "Please specify a built-in template name (e.g., 'default') or a valid directory path.",
+        )
+    })?;
+
+    // テンプレートファイルを読み込む
+    let template_files = load_template_files(&template_source, cli.with_adapters, cli.verbose)?;
+    let mut missing_found = false;
+
+    println!("--- aidle Structural Consistency Check ---");
+
+    for tf in template_files {
+        // docs/ 配下の Markdown ファイルのみを構造チェックの対象とする
+        if !tf.rel_path.starts_with("docs/") || !tf.rel_path.ends_with(".md") {
+            continue;
+        }
+
+        let local_path = cwd.join(&tf.rel_path);
+        if !local_path.exists() {
+            println!("\n[{}]: File does not exist.", tf.rel_path);
+            missing_found = true;
+            continue;
+        }
+
+        let local_content = fs::read_to_string(&local_path)
+            .map_err(|e| io_error(&format!("reading {}", local_path.display()), &e))?;
+
+        // テンプレートとローカルファイルの見出しを比較して、不足分（新しい観点）を抽出する
+        let missing_headings = commands::check::compare_headings(&tf.content, &local_content);
+
+        if !missing_headings.is_empty() {
+            println!("\n[{}]: Missing sections (concepts) detected.", tf.rel_path);
+            for h in missing_headings {
+                // 不足している見出しのテンプレート本文（スニペット）を抽出して表示
+                let snippet = commands::check::extract_section_content(&tf.content, &h);
+                println!("  - \"{}\"", h);
+                if !snippet.is_empty() {
+                    let indent = "    ";
+                    for line in snippet.lines().take(5) {
+                        println!("{}{}", indent, line);
+                    }
+                    if snippet.lines().count() > 5 {
+                        println!("    ...");
+                    }
+                }
+            }
+            missing_found = true;
+        }
+    }
+
+    if !missing_found {
+        println!("\nAll documents are up-to-date with the latest template concepts.");
+    } else {
+        println!("\nPlease incorporate the missing concepts into your project to align with the latest standards.");
+    }
+
     Ok(())
 }
 
