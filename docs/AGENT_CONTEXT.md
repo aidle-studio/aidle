@@ -2,35 +2,33 @@
 
 AIエージェント向けの最重要コンテキストです。
 本ファイルは、プロジェクトの **「現在進行形」の状態を管理する動的な地図** です。
-セッションの開始時、または状況の変化があった際に、自律的に最新状態に更新してください。
 
 ## 📍 現在フェーズ
 
-- フェーズ名: [例: MS1_SETUP / Phase 2 Implementation]
-- 現在のステータス: [例: 実行中 / 計画策定中 / 検証中]
+- フェーズ名: MS3_PURIFICATION (aidle 浄化作戦)
+- 現在のステータス: 実行中 (Refactoring Preparation)
 
 ## 🎯 直近のゴール
 
-- [例: テンプレート刷新のための AGENTS.md を作成する]
-- [例: AC-001 のユニットテストを Green にする]
+- `src/main.rs` を解体し、`core`, `cli`, `utils` モジュールに分割してテスト可能性を高める。
+- 現状の「赤点」品質スコアを正しく記録し、改善の道筋をつける。
 
 ## 📅 次のアクション (Next Actions)
 
-- [ ] [例: ARCHITECTURE.md を作成し、構成案を提示する]
-- [ ] [例: scripts/check_harness.sh のベースラインを実装する]
+- [ ] `QUALITY_SCORE.md` を現在の実態（カバレッジ、同期不足等）で更新する。
+- [ ] `src/lib.rs` を作成し、`main.rs` からテンプレートロード等の非I/Oロジックを移動する。
+- [ ] 分割したロジックに対して最初の UT (Branch 100%) を実装する。
 
 ## 📖 優先ドキュメント読了順
 
-AIエージェントが状況を正確に把握するために、以下の順序でドキュメントを読み込むことを推奨します。
-
-1. **[AGENTS.md](../AGENTS.md)**: 全体のポインタ。
-2. **[AGENT_CONTEXT.md](AGENT_CONTEXT.md)**: 本ファイル（現在の文脈）。
-3. **[HARNESS.md](HARNESS.md)**: 検証環境の確認。
-4. **[TODO.md](TODO.md)**: 全体の進捗状況。
-5. **[RULES.md](RULES.md)**: 開発ルールとDoDの確認。
+1. **[AGENTS.md](../AGENTS.md)**: カイゼン魂の確認。
+2. **[docs/TODO.md](TODO.md)**: マイルストーン3の詳細確認。
+3. **[AGENT_CONTEXT.md](AGENT_CONTEXT.md)**: 本ファイル（現在の文脈）。
+4. **[RULES.md](RULES.md)**: Tier 1 基準の再確認。
 
 ## 📊 進捗サマリー
 
-- [マイルストーンID]: [XX]% 完了
-- 残件タスク数: [N]件
-- 未解消の技術負債: [M]件（詳細は `docs/exec-plans/tech-debt.md` を参照）
+- MS3: 20% 完了 (Documentation normalized)
+- 残件タスク数: 4件 (MS3)
+- 未解消の技術負債: 1件 (Monolithic main.rs)
+- **Self-Review: [x]** (Documentation sync plan reviewed)
