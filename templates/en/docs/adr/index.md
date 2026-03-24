@@ -1,16 +1,16 @@
 # Architecture Decision Records (ADR)
 
-本プロジェクトにおける重要なアーキテクチャ上の決定事項を記録します。
-各決定は不変の履歴として、背景、決定、結果を明確に記述してください。
+Records important architectural decisions made in this project.
+Each decision should clearly describe the background, decision, and consequences as an immutable history.
 
-## 📋 ADR リスト
+## 📋 ADR List
 
-- **[ADR-0001: プロジェクトの初期構成](YYYY-MM-DD_topic.md)**: プロジェクトの基盤設計。
-- **[ADR-0002: 技術スタックの選定](YYYY-MM-DD_tech_stack.md)**: 選定理由とトレードオフ。
+- **[ADR-0001: Initial Project Configuration](YYYY-MM-DD_topic.md)**: Infrastructure design of the project.
+- **[ADR-0002: Selection of Tech Stack](YYYY-MM-DD_tech_stack.md)**: Reasons for selection and trade-offs.
 
-## 🛠️ ADR の作成ルール
+## 🛠️ Rules for Creating ADR
 
-エージェントがアーキテクチャに影響を与える決定を行った際は、以下のテンプレートを用いて新しい ADR を作成してください。
+When agents make a decision that affects the architecture, create a new ADR using the following template.
 
-- ファイル名: `YYYY-MM-DD_topic.md`
-- 構成: Context（背景）、Decision（決定）、Consequences（結果・影響）、Follow-ups（今後の課題）
+- Filename: `YYYY-MM-DD_topic.md`
+- Structure: Context, Decision, Consequences, Follow-ups

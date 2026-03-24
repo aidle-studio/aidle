@@ -1,16 +1,16 @@
 # AI References
 
-本ディレクトリは、AIエージェント（LLM）が特定の技術、ライブラリ、およびプロジェクト固有のコーディング規約を理解するための **「AI向け技術リファレンス」** を格納します。
+This directory stores **"Technical References for AI"** to help AI agents (LLMs) understand specific technologies, libraries, and project-specific coding conventions.
 
-## 📋 リファレンス一覧
+## 📋 List of References
 
-- **[Nixpacks-LLMS](nixpacks-llms.txt)**: Nixpacks を使用する際の AI 向け要約（例）。
-- **[Design-System-Reference](design-system-llms.txt)**: デザインシステムの AI 向け参照情報（例）。
+- **[Nixpacks-LLMS](nixpacks-llms.txt)**: AI summary for using Nixpacks (example).
+- **[Design-System-Reference](design-system-llms.txt)**: AI reference information for the design system (example).
 
-## 📝 リファレンスの形式
+## 📝 Format of References
 
-AIエージェントが迅速に情報を読み取り、正しいコードを生成できるように、以下の形式を推奨します。
+To ensure AI agents can quickly read information and generate correct code, the following formats are recommended.
 
-- 拡張子: `.txt` または `.md`
-- 形式: LLMフレンドリーな構造化テキスト
-- 内容: API仕様、コードスニペット、禁止事項、ベストプラクティスの要約
+- Extension: `.txt` or `.md`
+- Format: Structured text that is LLM-friendly
+- Content: Summary of API specifications, code snippets, prohibitions, and best practices.

@@ -1,31 +1,32 @@
 # PLANS.md
 
-This document defines the macro roadmap, overall progress, and key phase plans for the project.
+This document defines the project's macro roadmap, overall progress, and major phase plans.
 
-## 🗺️ Roadmap
+## 🗺️ Roadmap (Roadmap)
 
-Visualizes the project's big picture and the goals for each phase.
+Describes the overall picture of the project and the goals for each phase.
 
 | Phase | Goal | Status |
 | :--- | :--- | :--- |
-| **P1: Foundation** | Establish core features and quality gates | [🟢 Done / 🟡 In Progress] |
-| **P2: Feature** | Implement main features and enhance UX | [⚪️ Not Started] |
-| **P3: Release** | Optimization, security, and launch prep | [⚪️ Not Started] |
+| **P1: Foundation** | Establish foundation features and quality gates | [🟢 Completed / 🟡 In Progress] |
+| **P2: Feature** | Implement major features, improve UX | [⚪️ Not Started] |
+| **P3: Release** | Optimization, security, preparation for release | [⚪️ Not Started] |
 
 ## 📊 Current Priorities
 
-AI agents should prioritize these milestones:
+Agents MUST prioritize achieving the following milestones.
 
-1. [Milestone ID]: [Task description]
-2. [Milestone ID]: [Task description]
+1. [Milestone ID]: [Task Description]
+2. [Milestone ID]: [Task Description]
 
 ## 📝 Execution Plan Management
 
-Detailed execution plans are created in the following directories:
+Detailed execution plans are created under the following directories.
 
 - **`docs/exec-plans/active/`**: Detailed plans currently being executed.
-- **`docs/exec-plans/completed/`**: Archive of past execution plans.
+- **`docs/exec-plans/completed/`**: Archive of previously completed plans.
 
-## 🚨 Technical Debt
+## 🚨 Technical Debt (Technical Debt)
 
-A list of technical debt and deferred tasks is managed in `docs/exec-plans/tech-debt.md`. Agents should address these when capacity allows.
+The list of technical debt that needs to be resolved and tasks that have been postponed are managed in `docs/exec-plans/tech-debt.md`.
+Agents SHOULD consider resolving these when there is available capacity.

@@ -19,10 +19,10 @@ fn test_init_lang_en_creates_english_files() {
     // Verify RULES.md content is English
     let rules_path = project_root.join("docs/RULES.md");
     let content = fs::read_to_string(rules_path).expect("RULES.md should exist");
-    if !content.contains("This document defines the development process") {
+    if !content.contains("Constitution\" that defines the development process") {
         eprintln!("Actual Content:\n{}", content);
     }
-    assert!(content.contains("This document defines the development process"));
+    assert!(content.contains("Constitution\" that defines the development process"));
     assert!(!content.contains("本ドキュメントは、プロジェクトの開発プロセス"));
 }
 

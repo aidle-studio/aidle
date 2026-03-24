@@ -21,7 +21,10 @@ fn test_check_command_respects_lang_en() {
     // 2. Modify RULES.md to remove an English section
     let rules_path = project_root.join("docs/RULES.md");
     let content = fs::read_to_string(&rules_path).unwrap();
-    let new_content = content.replace("## 7. Process Evolution", "## Removed Section");
+    let new_content = content.replace(
+        "## 3. Quality Gates (Definition of Done: DoD)",
+        "## Removed Section",
+    );
     fs::write(&rules_path, new_content).unwrap();
 
     // 3. Run check with --lang en - should detect English missing section
@@ -35,7 +38,9 @@ fn test_check_command_respects_lang_en() {
         .stdout(predicate::str::contains(
             "Missing sections (concepts) detected.",
         ))
-        .stdout(predicate::str::contains("7. process evolution"));
+        .stdout(predicate::str::contains(
+            "3. quality gates (definition of done: dod)",
+        ));
 }
 
 #[test]
@@ -64,5 +69,7 @@ fn test_check_command_fails_if_lang_mismatch() {
         .stdout(predicate::str::contains(
             "Missing sections (concepts) detected.",
         ))
-        .stdout(predicate::str::contains("1. development principles"));
+        .stdout(predicate::str::contains(
+            "1. development principles (harness-first)",
+        ));
 }

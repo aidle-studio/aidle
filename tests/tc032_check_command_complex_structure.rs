@@ -18,21 +18,22 @@ fn test_check_command_detects_multiple_missing_concepts() {
 
     // 2. Remove multiple sections across different files
     let rules_path = project_root.join("docs/RULES.md");
-    let security_path = project_root.join("docs/SECURITY.md");
+    let audit_path = project_root.join("docs/AUDIT.md");
 
     let rules_content = fs::read_to_string(&rules_path).unwrap();
-    let new_rules = rules_content.replace(
-        "## 7. プロセスの進化 (Process Evolution)",
-        "## Removed Rules",
-    );
+    let new_rules = rules_content
+        .replace(
+            "## 2. Standard Development Process and Navigation",
+            "## Removed Rules",
+        )
+        .replace("## 2. 標準開発プロセスと導線", "## Removed Rules");
     fs::write(&rules_path, new_rules).unwrap();
 
-    let security_content = fs::read_to_string(&security_path).unwrap();
-    let new_security = security_content.replace(
-        "## 🛡️ セキュアコーディング原則 (Secure by Design)",
-        "## Removed Security",
-    );
-    fs::write(&security_path, new_security).unwrap();
+    let audit_content = fs::read_to_string(&audit_path).unwrap();
+    let new_audit = audit_content
+        .replace("## 5. Security", "## Removed Security")
+        .replace("## 5. セキュリティ (Security)", "## Removed Security");
+    fs::write(&audit_path, new_audit).unwrap();
 
     // 3. Run check - should detect all missing sections
     let mut cmd = Command::cargo_bin("aidle").unwrap();
@@ -41,13 +42,15 @@ fn test_check_command_detects_multiple_missing_concepts() {
         .assert()
         .success()
         .stdout(predicate::str::contains("docs/RULES.md"))
-        .stdout(predicate::str::contains(
-            "7. プロセスの進化 (process evolution)",
-        ))
-        .stdout(predicate::str::contains("docs/SECURITY.md"))
-        .stdout(predicate::str::contains(
-            "セキュアコーディング原則 (secure by design)",
-        ));
+        .stdout(
+            predicate::str::contains("2. standard development process and navigation")
+                .or(predicate::str::contains("2. 標準開発プロセスと導線")),
+        )
+        .stdout(predicate::str::contains("docs/AUDIT.md"))
+        .stdout(
+            predicate::str::contains("5. security")
+                .or(predicate::str::contains("5. セキュリティ (security)")),
+        );
 }
 
 #[test]

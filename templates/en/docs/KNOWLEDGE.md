@@ -1,41 +1,41 @@
 # KNOWLEDGE.md
 
-This document is a structured knowledge base for project-specific implicit knowledge, lessons learned from bugs, and reasons for specific architectural constraints.
-AI agents must update this file when a bug is fixed or a significant technical decision is made (**[x] part of the DoD**).
+This document is a structured memory store for accumulating project-specific "tacit knowledge," "lessons from bugs," and "reasons for special specifications."
+AI agents **MUST add to this file (as part of the [x] completion criteria) when fixing a bug or making an important technical decision (that doesn't warrant an ADR)**.
 
 ## 🎯 Operational Rules
 
-- **Unified Format**: Record new knowledge using the "Troubleshooting" or "Q&A" format below.
-- **Searchability**: Include relevant keywords and error messages to make it easily grep-able.
+- **Standardization of Format**: New insights must be added in the following "Troubleshooting" or "Q&A" format.
+- **Ensuring Searchability**: Describe related keywords and error messages as they are to make them easy to grep later.
 
 ---
 
-## 📚 Knowledge Base
+## 📚 Accumulated Insights (Knowledge Base)
 
-### 🐛 Troubleshooting (Bugs & Lessons)
+### 🐛 Bugs and Lessons (Troubleshooting)
 
 <!--
 [Format]
-- **Symptom/Error**: [e.g., `ModuleNotFoundError: No module named 'XXX'`]
-- **Root Cause**: [e.g., `requirements.txt` was not updated inside the Docker container]
-- **Remedy/Lesson**: [e.g., Always run `docker-compose build` after adding dependencies before running tests]
-- **Date**: 20XX-MM-DD
+- **Phenomenon/Error**: [Example: `ModuleNotFoundError: No module named 'XXX'`]
+- **Cause**: [Example: `requirements.txt` was not updated in the Docker container]
+- **Measure/Lesson**: [Example: When adding dependencies, always run `docker-compose build` before running tests]
+- **Date**: YYYY-MM-DD
 -->
 
-- **Symptom/Error**: [Describe the symptom here]
-- **Root Cause**: [Describe the root cause here]
-- **Remedy/Lesson**: [Describe the remedy or lesson here]
-- **Date**: 20XX-MM-DD
+- **Phenomenon/Error**: [Describe the phenomenon here]
+- **Cause**: [Describe the cause here]
+- **Measure/Lesson**: [Describe the measure here]
+- **Date**: YYYY-MM-DD
 
 ---
 
-### 💡 Project Quirks (Constraints & Decisions)
+### 💡 Unique Specifications and Constraints (Project Quirks)
 
 <!--
 [Format]
-- **Q**: [e.g., Why are we using `axios` instead of `fetch` here?]
-- **A**: [e.g., Legacy backend API requires specific custom headers managed centrally via axios interceptors. Do not switch to fetch.]
+- **Q**: [Example: Why is `axios` being used here instead of `fetch`?]
+- **A**: [Example: The legacy backend API requires special custom headers, which are managed centrally with `axios` interceptors. Do not change to `fetch` on your own!]
 -->
 
-- **Q**: [Question or context]
-- **A**: [Reason or constraint]
+- **Q**: [Describe the question/context here]
+- **A**: [Describe the reason/constraint here]

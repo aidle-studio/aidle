@@ -38,12 +38,12 @@ fn test_check_command_detects_missing_section() {
         .assert()
         .success();
 
-    // 2. Modify RULES.md to remove a specific section (e.g., "7. Process Evolution")
+    // 2. Modify RULES.md to remove a specific section
     let rules_path = project_root.join("docs/RULES.md");
     let content = fs::read_to_string(&rules_path).unwrap();
-    // Remove the section "7. プロセスの進化" (Heading normalized to "7. プロセスの進化 (process evolution)")
+    // Remove the section "## 3. 品質ゲート（Definition of Done: DoD）"
     let new_content = content.replace(
-        "## 7. プロセスの進化 (Process Evolution)",
+        "## 3. 品質ゲート（Definition of Done: DoD）",
         "## Removed Section",
     );
     fs::write(&rules_path, new_content).unwrap();
@@ -58,7 +58,7 @@ fn test_check_command_detects_missing_section() {
             "Missing sections (concepts) detected.",
         ))
         .stdout(predicate::str::contains(
-            "7. プロセスの進化 (process evolution)",
+            "3. 品質ゲート（definition of done: dod）",
         ));
 }
 

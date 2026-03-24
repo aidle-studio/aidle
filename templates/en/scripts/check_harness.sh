@@ -1,13 +1,13 @@
 #!/bin/bash
 
 # check_harness.sh
-# AI駆動開発 (AIDD) における「品質の番人」となる統合検証スクリプトです。
-# AIエージェントは「完了 (Done)」を宣言する前に必ずこのスクリプトを実行し、
-# 全ての検証（Harness）が SUCCESS であることを確認してください。
+# This is an integrated verification script that serves as a "quality gatekeeper" in AI-Driven Development (AIDD).
+# AI agents MUST execute this script before completing a task (declaring DoD)
+# to confirm that all verifications return SUCCESS.
 
-set -e # エラーが発生したら即座に終了
+set -e # Exit immediately if an error occurs
 
-# --- 🎨 カラー設定 ---
+# --- 🎨 Color Settings ---
 GREEN='\033[0;32m'
 RED='\033[0;31m'
 YELLOW='\033[1;33m'
@@ -15,114 +15,120 @@ NC='\033[0m' # No Color
 
 echo -e "${YELLOW}--- 🛠️ Harness Verification Starting ---${NC}"
 
-# --- ⚙️ 設定 & 引数解析 ---
-TIER=${1:-2} # デフォルトは Tier 2
-SCOPE=${2:-"all"} # all, review, lint, test, coverage
+# --- ⚙️ Settings & Argument Parsing ---
+TIER=${1:-2} # Default is Tier 2
+SCOPE=${2:-"all"} # all, secret, audit, sync, lint, test, coverage
 
 echo -e "Target Tier: ${TIER}"
 echo -e "Verification Scope: ${SCOPE}"
 
-# --- 🛡️ 1. 環境チェック (Self-Check) ---
-check_tool() {
-    if ! command -v $1 &> /dev/null; then
-        echo -e "${RED}[ERROR] Tool not found: $1${NC}"
-        echo -e "AIエージェントは自律的に環境をセットアップしてください。"
-        exit 1
-    fi
+# --- 🛡️ 1. Secret Leak Check (Secret Scan) ---
+run_secret_check() {
+    echo -e "\n${YELLOW}[PHASE 1] Secret & Security Scan${NC}"
+    # TODO: Enable if a lightweight scanner like gitleaks is installed
+    # if command -v gitleaks &> /dev/null; then
+    #     gitleaks detect --source . -v || exit 1
+    # else
+    #     echo -e "${YELLOW}[WARN] gitleaks is not installed. Skipping secret scan.${NC}"
+    # fi
+    echo -e "${GREEN}SUCCESS: Secret scan passed (or skipped).${NC}"
 }
 
-# --- 📝 2. 自己レビュー検証 (Review Check) ---
-run_review_check() {
-    echo -e "\n${YELLOW}[PHASE 0] Self-Review Verification${NC}"
+# --- 📝 2. Audit Check (Audit & DoD Check) ---
+run_audit_check() {
+    echo -e "\n${YELLOW}[PHASE 2] Audit & DoD Verification${NC}"
     
-    # 自己レビューが記録されているか確認する例（プロジェクトに合わせて調整）
-    # ここでは docs/AGENT_CONTEXT.md 内に "Self-Review: [x]" という記述があるかチェックします。
-    REVIEW_FILE="docs/AGENT_CONTEXT.md"
+    # Check if [x] (Audit) is marked in the DoD of the active plan file
+    ACTIVE_PLAN=$(ls -t docs/exec-plans/active/*.md 2>/dev/null | head -1 || true)
     
-    if [ ! -f "$REVIEW_FILE" ]; then
-        echo -e "${RED}[ERROR] $REVIEW_FILE not found!${NC}"
-        exit 1
-    fi
-
-    if grep -q "Self-Review: \[x\]" "$REVIEW_FILE"; then
-        echo -e "${GREEN}SUCCESS: Self-Review record found in $REVIEW_FILE.${NC}"
+    if [ -n "$ACTIVE_PLAN" ]; then
+        if grep -q "\[x\] \*\*(Audit)\*\*" "$ACTIVE_PLAN"; then
+            echo -e "${GREEN}SUCCESS: Audit checked in $ACTIVE_PLAN.${NC}"
+        else
+            echo -e "${RED}[ERROR] Audit not checked in $ACTIVE_PLAN!${NC}"
+            echo -e "Agents MUST perform a self-audit based on 'docs/AUDIT.md' and"
+            echo -e "check '[x] (Audit)' in the DoD of the plan."
+            exit 1
+        fi
     else
-        echo -e "${RED}[ERROR] Self-Review record not found!${NC}"
-        echo -e "AIエージェントは 'docs/RULES.md' のチェックリストに従い、"
-        echo -e "自己レビューを実施して $REVIEW_FILE に 'Self-Review: [x]' と追記してください。🍛"
-        exit 1
+        echo -e "${YELLOW}[WARN] No active plan found. Skipping Audit check.${NC}"
     fi
 }
 
-# --- 📝 0.5. コンテキスト同期検証 (Context Sync Check) ---
+# --- 🔄 3. Context Sync Check (Context Sync Check) ---
 run_sync_check() {
-    echo -e "\n${YELLOW}[PHASE 0.5] Context Sync Verification${NC}"
+    echo -e "\n${YELLOW}[PHASE 3] Context Sync Verification${NC}"
 
-    # 必須ドキュメントの存在チェック
-    REQUIRED_DOCS=("docs/AGENT_CONTEXT.md" "docs/TODO.md" "docs/KNOWLEDGE.md")
+    # Existence check for mandatory documents in v2 architecture
+    REQUIRED_DOCS=(
+        "AGENTS.md"
+        "PRD.md"
+        "ARCHITECTURE.md"
+        "docs/RULES.md"
+        "docs/TODO.md"
+        "docs/AGENT_CONTEXT.md"
+    )
     for doc in "${REQUIRED_DOCS[@]}"; do
         if [ ! -f "$doc" ]; then
-            echo -e "${RED}[ERROR] Required document $doc not found!${NC}"
+            echo -e "${RED}[ERROR] Required document '$doc' not found!${NC}"
+            echo -e "AI agents MUST NOT destroy the directory structure of 'aidle v2'."
             exit 1
         fi
     done
 
-    # TODO.md に未完了のタスクがないか、または適切に更新されているかの簡易チェック例
-    # （実際のプロジェクト運用に合わせて厳密化すること）
-    echo -e "${GREEN}SUCCESS: Required context files are present.${NC}"
-    echo -e "AIエージェントは、これらのファイルがアトミックに同期されていることを保証してください。"
+    echo -e "${GREEN}SUCCESS: All core context files are present.${NC}"
 }
 
-# --- 🔍 1. 静的解析 (Lint & Format) ---
+# --- 🔍 4. Static Analysis (Lint & Format) ---
 run_lint() {
-    echo -e "\n${YELLOW}[PHASE 1] Lint & Format Check${NC}"
-    # 例: Rust の場合
+    echo -e "\n${YELLOW}[PHASE 4] Lint & Format Check${NC}"
+    # [TODO: Uncomment according to the project's language]
+    # Example: For Rust
     # cargo fmt -- --check || exit 1
     # cargo clippy -- -D warnings || exit 1
+    # Example: For Node.js
+    # npm run lint || exit 1
     echo -e "${GREEN}SUCCESS: Lint & Format are clean.${NC}"
 }
 
-# --- 🧪 4. テスト実行 (UT/IT/E2E) ---
+# --- 🧪 5. Test Execution (UT/IT/E2E) ---
 run_tests() {
-    echo -e "\n${YELLOW}[PHASE 2] Multi-Layered Testing${NC}"
+    echo -e "\n${YELLOW}[PHASE 5] Multi-Layered Testing${NC}"
     
-    # Unit Tests (UT) - Tier 1 は全パターン必須
-    echo -e "Running Unit Tests..."
-    # cargo nextest run --lib || exit 1
-    
-    # Integration Tests (IT) - Tier 1/2 で必須
-    if [ "$TIER" -le 2 ]; then
-        echo -e "Running Integration Tests..."
-        # cargo nextest run --test '*' || exit 1
-    fi
-    
-    # End-to-End Tests (E2E) - Tier 1 でのみ必須（重いため）
-    if [ "$TIER" -eq 1 ]; then
-        echo -e "Running E2E Scenarios..."
-        # ./scripts/run_e2e.sh || exit 1
-    fi
+    # [TODO: Set the test command for the project]
+    echo -e "Running Unit/Integration Tests..."
+    # cargo test || exit 1
+    # npm run test || exit 1
     
     echo -e "${GREEN}SUCCESS: All tests passed for Tier ${TIER}.${NC}"
 }
 
-# --- 📊 5. カバレッジ & 密度チェック (Coverage & Density) ---
+# --- 📊 6. Coverage Check (Coverage Check) ---
 run_coverage() {
-    echo -e "\n${YELLOW}[PHASE 3] Coverage & Density Check${NC}"
-    # 例: llvm-cov を使用した差分カバレッジチェック
+    echo -e "\n${YELLOW}[PHASE 6] Coverage Check${NC}"
+    # [TODO: Set the coverage threshold check command]
+    # Example: Differential coverage check using llvm-cov
     # cargo llvm-cov --fail-under-lines 80 || exit 1
     
-    # TODO: TEST_PLAN.md との整合性（密度）をチェックするカスタムロジック
     echo -e "${GREEN}SUCCESS: Coverage targets met.${NC}"
 }
 
-# --- 🚀 実行制御 ---
+# --- 🚀 Execution Control ---
 case $SCOPE in
-    "review")   run_review_check ;;
+    "secret")   run_secret_check ;;
+    "audit")    run_audit_check ;;
     "sync")     run_sync_check ;;
     "lint")     run_lint ;;
     "test")     run_tests ;;
     "coverage") run_coverage ;;
-    "all")      run_review_check; run_sync_check; run_lint; run_tests; run_coverage ;;
+    "all")      
+        run_secret_check
+        run_audit_check
+        run_sync_check
+        run_lint
+        run_tests
+        run_coverage 
+        ;;
     *)          echo "Unknown scope: $SCOPE"; exit 1 ;;
 esac
 

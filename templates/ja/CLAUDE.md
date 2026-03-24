@@ -7,7 +7,7 @@
 ## 読み順
 1. `AGENTS.md`
 2. `docs/RULES.md`
-3. `docs/SPEC.md`
+3. `PRD.md`
 4. `docs/TEST_PLAN.md`
 5. `docs/TODO.md`
 6. `docs/KNOWLEDGE.md`

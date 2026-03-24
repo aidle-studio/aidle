@@ -1,28 +1,53 @@
-# README.md
+# [TODO: Project Name]
 
-[TODO: Provide a brief summary of the project and its value proposition.]
+> [TODO: Project catchphrase or short description]
 
-## 🚀 Getting Started
+[TODO: Detailed project description. Describe what the application/tool does.]
 
-To get started with development, please refer to the **[`AGENTS.md`](AGENTS.md)** file.
-This project is designed for AI-Driven Development (AIDD), and `AGENTS.md` contains all the necessary instructions for AI agents.
+---
 
-## 🛠️ Prerequisites
+## ✨ Key Features
 
-- [List required tools, e.g., Rust 1.75+, Docker, etc.]
+* [TODO: Feature 1]
+* [TODO: Feature 2]
+* [TODO: Feature 3]
 
-## 📦 Installation
+---
+
+## 🚀 Quick Start
+
+### Prerequisites
+- [TODO: Node.js >= 18.0.0, etc.]
+- [TODO: Rust >= 1.70.0, etc.]
+
+### Setup
 
 ```bash
-# Example
-git clone <repo-url>
-cd <project-name>
-# [Add setup commands]
+# [TODO: Provide instructions from cloning the repository to installation]
+git clone <repository-url>
+cd <project-directory>
+# Example: npm install or cargo build
 ```
 
-## 🧪 Quick Test
+### Usage
 
 ```bash
-# Example
-./scripts/check_harness.sh
+# [TODO: Provide instructions on how to start the application]
+# Example: npm run dev or cargo run
 ```
+
+---
+
+## 🤖 About AI-Driven Development (AIDD)
+
+This project is structured incorporating the best practices of **AI-Driven Development (AIDD)**.
+It is designed so that AI editors/agents such as Copilot, Cursor, Windsurf, Gemini, and Claude can accurately understand the project context and autonomously advance development.
+
+### To Agents (AI) Participating in Development
+When newly joining the project, you MUST first read **`AGENTS.md`** located in the root directory.
+From there, you will be guided to foundational documents called the "Core Context" (e.g., `ARCHITECTURE.md`, `RULES.md`), enabling you to grasp the rules and current state necessary for safe and efficient development.
+
+---
+
+## 📄 License
+[TODO: License information (e.g., MIT License)]

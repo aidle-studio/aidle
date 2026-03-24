@@ -1,15 +1,15 @@
 # Technical Debt Tracker
 
-本ドキュメントは、プロジェクト内の技術的負債、後回しにされた改善点、および計画的なリファクタリングタスクを追跡します。
+This document tracks technical debt within the project, improvements that have been postponed, and planned refactoring tasks.
 
-## 📋 技術的負債リスト
+## 📋 Technical Debt List
 
-| 発生日 | 負債の内容 | 解消の優先度 | 解消状況 |
+| Date Identified | Description of Debt | Priority for Resolution | Status |
 | :--- | :--- | :--- | :--- |
-| YYYY-MM-DD | [例: テストコードの重複が激しい] | [🟡 Mid] | [未着手] |
-| YYYY-MM-DD | [例: 依存ライブラリのバージョンが古い] | [🟢 Low] | [未着手] |
+| YYYY-MM-DD | [Example: Severe duplication of test code] | [🟡 Mid] | [Not Started] |
+| YYYY-MM-DD | [Example: Dependency library version is old] | [🟢 Low] | [Not Started] |
 
-## 🛠️ 負債の記録ルール
+## 🛠️ Rules for Recording Debt
 
-AIエージェントは、実装中に「今は時間がないが、将来的に直すべき箇所」を見つけた場合、自律的に本ファイルを更新し、負債を可視化してください。
-また、余裕があるときに「ガベージコレクション（リファクタリング）」タスクとしてこれらを解消してください。
+If an AI agent finds a part that "should be fixed in the future, although there is no time now" during implementation, autonomously update this file to visualize the debt.
+Also, resolve these as "garbage collection (refactoring)" tasks when you have capacity.

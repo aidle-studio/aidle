@@ -1,36 +1,44 @@
 # HARNESS.md
 
-本ドキュメントは、AIエージェントがプロジェクト環境を **自律的に設営し、品質を自己修復レールに乗せるためのガイドライン** です。
-セッション開始時に必ず内容を確認し、自分のための検証ツールやフックが正しく機能しているかを保証してください。
+This document provides **guidelines for AI agents to autonomously set up the project environment and put quality on a self-healing track**.
+Always check the content at the start of a session to guarantee that your verification tools and hooks are functioning correctly.
 
-## 🤖 エージェントの任務：ハーネス設営
+## 🤖 Agent's Mission: Harness Setup
 
-プロジェクトに参画した直後、または環境の変化を検知した際は、以下の「ハーネス（補助輪）」を自律的にセットアップしてください。
+Immediately after joining a project or when detecting changes in the environment, autonomously set up the following "Harness (Training Wheels)".
 
-### 1. 高速フィードバックの構築
-- **高速リンターの選定**: プロジェクトの言語（Rust, TS, Python...）に合わせ、最も高速なツール（Oxlint, Ruff, Biome等）をインストールし、設定せよ。
-- **自動修正フックの構成**: AIエディタ（Claude Code等）のHooks機能やGit Hooksを活用し、ファイル変更直後に自動で検証を走らせる仕組みを構築せよ。
-- **エラーの教育化**: リンターのエラーメッセージが、単なる指摘ではなく「AIへの具体的な修正指示（解決策のヒント）」を含むように、必要に応じてラッパーやカスタムルールを構成せよ。
+### 1. Build Fast Feedback
+- **Selection of Fast Linters**: Depending on the project's language (Rust, TS, Python...), install and configure the fastest tools (Oxlint, Ruff, Biome, etc.).
+- **Configuration of Auto-fix Hooks**: Set up editor settings or Git Hooks (`pre-commit`, etc.) so that formatting and lint fixes run automatically immediately after the agent saves.
 
-### 2. 設定ファイルの保護
-- AI自身が「設定（.eslintrc, rustfmt.toml等）」を書き換えてエラーを回避することを禁止するガードレールを設置せよ（Pre-tool-use hook等でのブロック）。
+### 2. Protection of Rules and Configuration Files (Prevention of Test Cheating)
+To prevent the AI from "loosening settings" to forcibly avoid errors (cheating), set up the following guardrails.
+- **Monitoring Targets**: Configuration files such as `.eslintrc`, `rustfmt.toml`, `nextest.toml`, and existing test code.
+- **Guardrail Example**: Build a mechanism that always issues a Warning if these files are changed and requires **"explicit human (user) review and agreement"** before committing.
 
-### 3. 完了条件チェッカーの実装
-- `scripts/check_harness.sh` に、そのプロジェクトの「品質ゲート（Lint, Test, Typecheck, Coverage）」を一括実行するロジックを実装し、成功時にのみ「完了」を報告するようにせよ。
+### 3. Security Scan (Secret & SAST)
+To prevent accidentally committing sensitive information (API keys, passwords), it is strongly recommended to **incorporate a lightweight secret scanner that can be run locally (`gitleaks`, `trufflehog`, or custom Linter rules, etc.) into `check_harness.sh` or a Pre-commit hook**.
 
-## 🛠️ 検証コマンドの期待値
+### 4. Implementation of Definition of Done Checker (`check_harness.sh`)
+Create `scripts/check_harness.sh` at the root of the project and implement logic to collectively execute the following "Quality Gates".
+- **Lint & Format**: Zero warnings, zero diffs.
+- **Test**: All tests are Green.
+- **Coverage**: Strictly check whether the coverage targets defined in `TEST_PLAN.md` (e.g., Branch 100%) are met using CI tools (`llvm-cov`, `jest --coverage`, etc.).
+- **Output**: Output `SUCCESS` (or `Done`) only when all succeed, and terminate immediately with `exit 1` if even one fails.
 
-エージェントは、以下のコマンド（またはそれと同等の統合コマンド）が常に `SUCCESS` を返す状態を維持する義務があります。
+## 🛠️ Expected Values for Verification Commands
 
-1. **Lint**: `cargo clippy`, `eslint`, `ruff check` 等（警告ゼロ推奨）
-2. **Format**: `cargo fmt`, `prettier`, `black` 等（修正差分ゼロ）
-3. **Test**: `cargo nextest`, `jest`, `pytest` 等（全テストGreen）
-4. **Harness**: `scripts/check_harness.sh`（一括チェック）
+Agents have an obligation to maintain a state where the following commands (or equivalent integrated commands) always return `SUCCESS` during implementation.
 
-## 🔄 自己修復のフロー
+1. **Lint**: `cargo clippy`, `eslint`, `ruff check`, etc. (Zero warnings recommended)
+2. **Format**: `cargo fmt`, `prettier`, `black`, etc. (Zero modification diffs)
+3. **Test & Coverage**: `cargo llvm-cov`, `jest --coverage`, etc. (Clear thresholds)
+4. **Harness**: `scripts/check_harness.sh` (Collective check)
 
-検証に失敗した場合、AIは以下のステップで自律的に解決を図ってください。
+## 🔄 Self-Healing Flow
 
-1. エラーメッセージから「違反箇所」と「原因」を特定する。
-2. ハーネスが提供するヒントや、関連ドキュメント（RULES.md, ADR）を参照して修正方針を立てる。
-3. 修正を適用し、再度検証スクリプトを実行して `SUCCESS` を確認する。
+If verification fails, the AI should autonomously attempt to resolve it using the following steps.
+
+1. Identify the "violated part" and "cause" from the error message.
+2. Refer to hints provided by the harness or related documents (RULES.md, RELIABILITY.md) to establish a fix policy.
+3. Apply the fix and run the verification script again to confirm `SUCCESS`.

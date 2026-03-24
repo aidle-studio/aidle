@@ -1,6 +1,7 @@
 use assert_cmd::cargo::cargo_bin_cmd;
 use std::path::Path;
 use tempfile::tempdir;
+use aidle::core::DEFAULT_TEMPLATE_FILES;
 
 #[test]
 fn tc003_dry_run_does_not_create_gc1_required_files() {
@@ -14,18 +15,7 @@ fn tc003_dry_run_does_not_create_gc1_required_files() {
         .assert()
         .success();
 
-    let required = [
-        "AGENTS.md",
-        "README.md",
-        "docs/AGENT_CONTEXT.md",
-        "docs/RULES.md",
-        "docs/SPEC.md",
-        "docs/TODO.md",
-        "docs/TEST_PLAN.md",
-        "docs/KNOWLEDGE.md",
-    ];
-
-    for rel in required {
+    for rel in DEFAULT_TEMPLATE_FILES {
         assert!(
             !Path::new(root).join(rel).exists(),
             "file should not be created in dry-run: {rel}"

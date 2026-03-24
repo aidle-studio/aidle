@@ -1,29 +1,27 @@
 # AGENTS.md
 
 This project is an **Agent-First** development environment.
-AI agents (e.g., Claude Code, Cursor, Windsurf) should use this file as their starting point to understand the project.
+AI agents (Gemini, Claude, Cursor, etc.) MUST use this file as the starting point to understand the project's context and rules.
 
-## 🗺️ Project Map
+## 🗺️ Project Map (Core Context)
 
-Detailed rules and context are organized in the `docs/` directory following the principle of "Progressive Disclosure."
-Agents should read the following files in order to understand the current situation:
+Detailed rules and contexts are located under `docs/`.
+When joining the project, agents MUST read the following four core files in order as prerequisite knowledge:
 
-1. **[docs/TODO.md](docs/TODO.md)**: Overall roadmap, milestones, and task list.
-2. **[docs/AGENT_CONTEXT.md](docs/AGENT_CONTEXT.md)**: Current phase, immediate goals, and next actions.
-3. **[docs/RULES.md](docs/RULES.md)**: Definition of the development process and DoD.
-4. **[docs/SPEC.md](docs/SPEC.md)**: Requirements and Acceptance Criteria (Source of Truth).
-5. **[docs/TEST_PLAN.md](docs/TEST_PLAN.md)**: Testing strategy and AC-TC traceability.
-6. **[docs/ARCHITECTURE.md](docs/ARCHITECTURE.md)**: High-level design and technical stack.
+1. **[ARCHITECTURE.md](ARCHITECTURE.md)**: The overall system structure, dependencies, and "Immutable Map."
+2. **[docs/HARNESS.md](docs/HARNESS.md)**: [IMPORTANT] MUST be checked at the start of every session to set up your verification rails.
+3. **[docs/AGENT_CONTEXT.md](docs/AGENT_CONTEXT.md)**: Dynamic context of the current phase, immediate goals, and next actions.
+4. **[docs/RULES.md](docs/RULES.md)**: Definition of the development process and Definition of Done (DoD) (The Constitution).
 
-## 🚀 Development Workflow
+## 🚀 Task Workflow
 
-This project proceeds through the **"Plan ➔ Harness ➔ Act ➔ Review ➔ Verify"** cycle.
+This project proceeds in a cycle of **"Plan ➔ Harness ➔ Act ➔ Audit ➔ Verify"**.
+Details are described in `docs/RULES.md`.
 
-- **Self-Review & Self-Criticism**: Before submitting any results, agents must conduct a self-review using the checklist in `docs/RULES.md`. Emphasis is placed on identifying and fixing vulnerabilities in one's own code and logic (Self-Criticism).
-- **Continuous Process Kaizen**: If you find flaws or improvements in project rules or documentation, propose an update according to the "Process Evolution" section in `docs/RULES.md`. Improving the process itself is a key duty of the agent.
-- **Verification First**: Trust mechanical verification (Lint, Test) over natural language instructions.
-- For details, refer to the specialized documents in `docs/` (SPEC.md, TEST_PLAN.md, etc.).
+- **Starting Point for Instructions**: When unsure of "what to do," ALWAYS return to `docs/AGENT_CONTEXT.md` to check the current status and active plans (`docs/exec-plans/active/*.md`).
+- **Verification Priority**: MUST prioritize mechanical verification (Lint, Test) over natural language instructions.
+- **Continuous Process Improvement**: If you identify flaws or areas for improvement in the current rules or documents, actively propose improvements.
 
 ## 🤖 Initial Setup
 
-Upon joining the project or when the environment changes, immediately follow **`docs/HARNESS.md`** to set up or verify your own verification environment (hooks, linters, scripts).
+When newly joining the project or when the environment changes, immediately set up or verify your own verification environment (hooks, linters, verification scripts) according to **`docs/HARNESS.md`**.

@@ -1,31 +1,51 @@
-# ARCHITECTURE.md
+<!--
+[AI Agent Instructions for Architecture]
+⚠️ WARNING: This file is a Core Context and is loaded in every session.
+To prevent context bloat, strictly adhere to the following update rules:
+1. **Keep it as an Overview**: Only concisely describe the "system's big picture" and the "primary tech stack" in this file.
+2. **Move Details Out**: Detailed internal designs for specific modules or features should be written in `docs/design-docs/*.md` instead of this file, with only links provided here.
+3. **Separate History**: The "rationale (background)" for technology choices should be recorded in `docs/adr/*.md` instead of this file.
+-->
 
-This document defines the high-level design, technical stack, and directory structure of the project.
+# ARCHITECTURE.md (Base Specification)
 
-## 🏗️ Technical Stack
+This document is the "Immutable Map" showing the overall structure and tech stack of the system.
+For an overview of the requirements (What), refer to the Product Requirements Document ➡️ **[PRD](PRD.md)**.
 
-- **Language**: [e.g., Rust / TypeScript / Python]
-- **Frameworks**: [e.g., Axum / React / FastAPI]
-- **Database**: [e.g., PostgreSQL / Redis]
-- **Infrastructure**: [e.g., AWS / Docker / Kubernetes]
+## 1. 🏗️ System Overview
+- [TODO: Describe the overall system architecture (e.g., frontend and backend configuration, etc.) in a few lines]
+- 💡 For the overall design philosophy (Core Beliefs), refer to ➡️ `docs/design-docs/core-beliefs.md`.
 
-## 📂 Directory Structure
+## 2. 📚 Tech Stack
+* For the rationale behind each technology choice, refer to the records under `docs/adr/`.
+* If there are **"project-specific best practices (cheat sheets for AI)"** for each technology or library, ALWAYS refer to `docs/references/` before implementation.
 
-[TODO: Describe the project's folder structure and the responsibility of each directory.]
+- **Frontend**: [TODO: e.g., React (Next.js)] ➡️ `docs/references/[TODO].md`
+- **Backend**: [TODO: e.g., Rust (Axum)]
+- **Database**: [TODO: e.g., PostgreSQL]
 
-- `src/`: Source code
-- `tests/`: Integration and E2E tests
-- `docs/`: Technical documentation and context
-- `scripts/`: Automation and Harness scripts
+## 3. 📂 Main Components and Directory Structure
 
-## 🧬 Core Concepts
+<!-- 
+[AI Agent Instructions for Updating this Table]
+- The granularity of additions should be "major directory (module) units"; do not list individual files.
+- The "Role" column should be kept within 2 sentences (approx. 100 characters).
+- When adding a new component, always specify the path under `docs/design-docs/` for the "Link to Detailed Design" (it's okay if the file hasn't been created yet).
 
-[TODO: Describe the fundamental design patterns or core concepts unique to this project.]
+✅ Ideal Example:
+| Component (Path) | Role | Link to Detailed Design |
+| :--- | :--- | :--- |
+| `src/api/` | REST API endpoint layer for external use. Responsible for routing and I/O validation. | ➡️ `docs/design-docs/api-design.md` |
+| `src/core/` | Business logic and domain models. A pure logic layer with no external dependencies. | ➡️ `docs/design-docs/domain-model.md` |
+| `src/infra/` | Implementation layer for DB connections and external API clients. | ➡️ `docs/design-docs/infra-layer.md` |
+-->
 
-- **Concept 1**: [e.g., Event-Driven Architecture]
-- **Concept 2**: [e.g., Functional Domain Modeling]
+| Component (Path) | Role | Link to Detailed Design |
+| :--- | :--- | :--- |
+| `src/` | [TODO: Application's main source code] | ➡️ `docs/design-docs/main-structure.md` |
+| `docs/` | Documentation for agents and humans. Manages rules and specifications. | - |
 
-## 🔗 External Resources
+## 4. 🔗 Links to Common Technical Rules
+Refer to the following for project-wide laws (rules) to be followed during implementation.
 
-- **Architecture Decision Records (ADR)**: [docs/adr/index.md](docs/adr/index.md)
-- **Detailed Design Docs**: [docs/design-docs/index.md](docs/design-docs/index.md)
+- ➡️ **Error Handling and Security Constraints**: `docs/RELIABILITY.md`

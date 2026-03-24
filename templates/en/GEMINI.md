@@ -1,18 +1,18 @@
 # GEMINI.md
 
 ## Source of Truth
-- 正本は `AGENTS.md` です。
-- このファイルは Gemini 向けの補助レイヤであり、正本を置き換えません。
+- The Single Source of Truth is `AGENTS.md`.
+- This file serves as an auxiliary layer for Gemini and does not replace the source of truth.
 
-## 読み順
+## Reading Order
 1. `AGENTS.md`
 2. `docs/RULES.md`
-3. `docs/SPEC.md`
+3. `PRD.md`
 4. `docs/TEST_PLAN.md`
 5. `docs/TODO.md`
 6. `docs/KNOWLEDGE.md`
 
-## 安全ルール（要約）
-- 合意されていない仕様で実装を進めない。
-- TDD（Red/Green/Refactor）を守る。
-- 破壊的な変更は明示的な合意がある場合のみ行う。
+## Safety Rules (Summary)
+- You MUST NOT proceed with implementation on unagreed specifications.
+- You MUST adhere to TDD (Red/Green/Refactor).
+- Destructive changes MUST ONLY be made with explicit agreement.

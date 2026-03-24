@@ -51,24 +51,53 @@ Gemini CLI ユーザー向けに、`aidle` プロジェクトでの開発を120%
 
 ---
 
-## 📁 生成されるプロジェクト構造 (AI-Optimized)
+## 📁 生成されるプロジェクト構造 (aidle v2 Architecture)
 
-AIが「迷わず、嘘をつかず、爆速で自己修正できる」ための OpenAI / 逆瀬川スタイルのディレクトリツリーを生成します。
+AIが「迷わず、嘘をつかず、コンテキストを溢れさせない」ための究極のディレクトリツリー（The Ultimate AIDD Protocol）を生成します。
 
 ```text
 / (Project Root)
-├── AGENTS.md                  # 50行以内の極小マップ（AIの入り口）
-├── ARCHITECTURE.md            # プロジェクトの不変の地図
+├── README.md                  # 人間向け概要＆AIへの入り口
+├── AGENTS.md                  # ★起点: エージェントの目次・ハブ
+├── PRD.md                     # ★最上位仕様 (What): 機能一覧
+├── ARCHITECTURE.md            # ★基本仕様書 (How): システム全体像
+│
 ├── docs/                      # システム・オブ・レコード（正本）
-│   ├── HARNESS.md             # 【最重要】検証レールの設営ガイド
-│   ├── RULES.md               # 開発プロセス（計画→ハーネス→実装→検証）
-│   ├── product-specs/         # 仕様駆動開発の正本 (REQ/AC)
-│   ├── exec-plans/            # 実行プラン（active/completed）
-│   ├── adr/                   # 決定履歴 (ADR)
-│   └── ...                    # 各専門領域の規約 (SECURITY, RELIABILITY等)
+│   ├── RULES.md               # 憲法: 開発の掟と各法律へのポータル
+│   ├── HARNESS.md             # 環境: 検証ツールの自己修復ルール
+│   ├── AGENT_CONTEXT.md       # 動的文脈: 今何してるか（現在地）
+│   │
+│   ├── PLAN_TEMPLATE.md       # 雛形: 強制思考プロンプト付きプラン
+│   ├── TEST_PLAN.md           # 法律: Tier別テスト密度・FMEA
+│   ├── RELIABILITY.md         # 法律: 冪等性・TraceID・エラー処理
+│   ├── AUDIT.md               # 法律: コードレビューと自己監査基準
+│   ├── QUALITY_SCORE.md       # 状態: 現在の品質ダッシュボード
+│   │
+│   ├── TODO.md                # 全体のマクロなマイルストーン
+│   ├── PLANS.md               # 全体のロードマップ
+│   ├── KNOWLEDGE.md           # 教訓と暗黙知の蓄積
+│   │
+│   ├── features/              # 機能仕様書 (Whatの詳細/AC)
+│   ├── design-docs/           # 詳細設計書 (Howの詳細/DB/API)
+│   ├── adr/                   # 技術的決定の記録
+│   └── exec-plans/            # 現場のタスク実行プラン
+│
 └── scripts/
     └── check_harness.sh       # 完了条件（DoD）の一括チェッカー
 ```
+
+---
+
+## 🔄 The Ultimate Loop (エージェントの完璧な導線)
+
+aidle v2 のアーキテクチャは、AIがタスクを実行する上で「絶対にサボれない・迷子にならない」ための思考のレール（導線）を提供します。
+
+1. **参画と状況把握**: `AGENTS.md` を起点に `PRD.md` や `ARCHITECTURE.md` を読み込み、`TODO.md` から次のマイルストーンを把握する。
+2. **要件と設計 (Spec & Design)**: いきなりコードを書かず、まずは `FEATURE_TEMPLATE.md` と `DESIGN_TEMPLATE.md` を使って「何を作るか(What)」と「どう作るか(How)」を定義し、人間の合意を得る。
+3. **実行計画 (Plan)**: 仕様と設計をもとに `PLAN_TEMPLATE.md` を作成。隠しプロンプトに怒られながら、FMEAマトリクス（異常系のテスト観点）を強制的に埋めさせられる。
+4. **実装と自己修復 (Act & Harness)**: テスト駆動(TDD)で実装し、エラーが出れば `HARNESS.md` の自己修復ルールに従ってLinterやコンパイラと対話する。
+5. **自己監査と検証 (Audit & Verify)**: `AUDIT.md` に基づき「変数名は適切か？ ズルしてないか？」を自己批判し、`check_harness.sh` の機械的合格を証明する。
+6. **同期と完了 (Sync)**: `QUALITY_SCORE.md` を更新し、学んだ教訓を `KNOWLEDGE.md` に残して次のタスクへ進む。
 
 ## 💡 なぜ "aidle" なのか？
 
