@@ -35,6 +35,7 @@ Usage:
 Subcommands:
     init [dir]    Initialize a new project in [dir] or current directory.
     check         Verify structural consistency between local documents and the template.
+    update        Update project rules and missing dynamic sections to the latest template.
 
 Options:
     --output <path>         Set output root directory (cannot be used with [dir]).
@@ -81,10 +82,14 @@ fn run() -> Result<(), (u8, String)> {
         return handle_check_command(&cwd, &config, args);
     }
 
+    if command == "update" {
+        return handle_update_command(&cwd, &config, args);
+    }
+
     if command != "init" {
         return Err(arg_error(
             format!("unsupported subcommand `{command}`"),
-            "Use `aidle init [dir]` to initialize a project.",
+            "Use `aidle init [dir]` or `aidle update`.",
         ));
     }
 
@@ -245,11 +250,13 @@ fn handle_check_command(
     let cli = parse_cli_options(args)?;
     let template_name = cli
         .template
+        .clone()
         .or_else(|| config.template.as_ref().and_then(|t| t.name.clone()))
         .unwrap_or_else(|| "default".to_string());
 
     let lang = cli
         .lang
+        .clone()
         .or_else(|| config.language.as_ref().and_then(|l| l.default.clone()))
         .unwrap_or_else(|| "ja".to_string());
 
@@ -315,6 +322,157 @@ fn handle_check_command(
         );
     }
 
+    Ok(())
+}
+
+fn handle_update_command(
+    cwd: &Path,
+    config: &AidleConfig,
+    args: impl Iterator<Item = String>,
+) -> Result<(), (u8, String)> {
+    use crate::core::FileCategory;
+    use std::fs;
+
+    let cli = parse_cli_options(args)?;
+
+    // Fallbacks for config
+    let dry_run = cli.dry_run
+        || config
+            .execution
+            .as_ref()
+            .and_then(|e| e.dry_run)
+            .unwrap_or(false);
+
+    let with_adapters = cli.with_adapters
+        || config
+            .adapters
+            .as_ref()
+            .and_then(|a| a.enabled)
+            .unwrap_or(false);
+
+    let template_name = cli
+        .template
+        .clone()
+        .or_else(|| config.template.as_ref().and_then(|t| t.name.clone()))
+        .unwrap_or_else(|| "default".to_string());
+
+    let lang = cli
+        .lang
+        .clone()
+        .or_else(|| config.language.as_ref().and_then(|l| l.default.clone()))
+        .unwrap_or_else(|| "ja".to_string());
+
+    let template_source = resolve_template_source(&template_name).ok_or_else(|| {
+        arg_error(
+            format!("unsupported template name or invalid path `{template_name}`"),
+            "Please specify a built-in template name (e.g., 'default') or a valid directory path.",
+        )
+    })?;
+
+    let template_files = load_template_files(&template_source, &lang, with_adapters, cli.verbose)?;
+
+    println!("--- aidle Update (Template Sync) ---");
+    if dry_run {
+        println!("*** DRY RUN: No files will be modified ***\n");
+    }
+
+    let root = resolve_root(cwd, config, &cli)?;
+    let mut updated_count = 0;
+
+    for tf in template_files {
+        let local_path = root.join(&tf.rel_path);
+        let category = FileCategory::classify(&tf.rel_path);
+
+        // Ensure parent dir exists
+        if !dry_run
+            && let Some(parent) = local_path.parent()
+            && let Err(e) = fs::create_dir_all(parent)
+        {
+            return Err(io_error(
+                &format!("creating directory {}", parent.display()),
+                &e,
+            ));
+        }
+
+        let local_content = if local_path.exists() {
+            Some(
+                fs::read_to_string(&local_path)
+                    .map_err(|e| io_error(&format!("reading {}", local_path.display()), &e))?,
+            )
+        } else {
+            None
+        };
+
+        match category {
+            FileCategory::Static => {
+                if let Some(existing) = local_content {
+                    if existing != tf.content {
+                        println!("[Replace] {}", tf.rel_path);
+                        if !dry_run {
+                            fs::write(&local_path, &tf.content).map_err(|e| {
+                                io_error(&format!("writing {}", local_path.display()), &e)
+                            })?;
+                        }
+                        updated_count += 1;
+                    }
+                } else {
+                    println!("[Create]  {}", tf.rel_path);
+                    if !dry_run {
+                        fs::write(&local_path, &tf.content).map_err(|e| {
+                            io_error(&format!("writing {}", local_path.display()), &e)
+                        })?;
+                    }
+                    updated_count += 1;
+                }
+            }
+            FileCategory::Dynamic => {
+                let Some(existing) = local_content else {
+                    println!("[Create]  {}", tf.rel_path);
+                    if !dry_run {
+                        fs::write(&local_path, &tf.content).map_err(|e| {
+                            io_error(&format!("writing {}", local_path.display()), &e)
+                        })?;
+                    }
+                    updated_count += 1;
+                    continue;
+                };
+
+                let missing_headings = commands::check::compare_headings(&tf.content, &existing);
+                if missing_headings.is_empty() {
+                    continue; // Nothing to inject
+                }
+
+                println!(
+                    "[Inject]  {} ({} missing sections)",
+                    tf.rel_path,
+                    missing_headings.len()
+                );
+                let mut current_text = existing;
+                for h in missing_headings {
+                    println!("  -> Injecting section: \"{}\"", h);
+                    let preceding = commands::check::find_preceding_heading(&tf.content, &h);
+                    let new_section_with_heading =
+                        commands::check::extract_full_section(&tf.content, &h);
+
+                    if !new_section_with_heading.is_empty() {
+                        current_text = commands::check::insert_after_section(
+                            &current_text,
+                            preceding.as_deref(),
+                            &new_section_with_heading,
+                        );
+                    }
+                }
+
+                if !dry_run {
+                    fs::write(&local_path, &current_text)
+                        .map_err(|e| io_error(&format!("writing {}", local_path.display()), &e))?;
+                }
+                updated_count += 1;
+            }
+        }
+    }
+
+    println!("\nUpdate complete. {} files updated.", updated_count);
     Ok(())
 }
 

@@ -49,6 +49,36 @@ pub enum TemplateSource {
     Filesystem(PathBuf),
 }
 
+#[derive(Debug, PartialEq, Eq, Clone, Copy)]
+pub enum FileCategory {
+    /// Completely overwrite the file during updates (e.g., rules, templates, scripts)
+    Static,
+    /// Smartly insert missing sections during updates without destroying existing content (e.g., TODO.md, PRD.md)
+    Dynamic,
+}
+
+impl FileCategory {
+    pub fn classify(rel_path: &str) -> Self {
+        let dynamic_files = [
+            "PRD.md",
+            "ARCHITECTURE.md",
+            "README.md",
+            "docs/AGENT_CONTEXT.md",
+            "docs/QUALITY_SCORE.md",
+            "docs/TODO.md",
+            "docs/PLANS.md",
+            "docs/KNOWLEDGE.md",
+            "docs/exec-plans/tech-debt.md",
+        ];
+
+        if dynamic_files.contains(&rel_path) {
+            FileCategory::Dynamic
+        } else {
+            FileCategory::Static
+        }
+    }
+}
+
 impl TemplateSource {
     pub fn display_name(&self) -> String {
         match self {

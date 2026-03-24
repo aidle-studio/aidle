@@ -1,7 +1,7 @@
+use aidle::core::DEFAULT_TEMPLATE_FILES;
 use assert_cmd::cargo::cargo_bin_cmd;
 use std::path::Path;
 use tempfile::tempdir;
-use aidle::core::DEFAULT_TEMPLATE_FILES;
 
 #[test]
 fn tc002_init_with_dir_creates_gc1_required_files_under_target_directory() {
